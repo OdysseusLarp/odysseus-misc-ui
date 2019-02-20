@@ -1,18 +1,23 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h2>Choose backend:</h2>
+    <b-button size="sm" class="my-2 my-sm-0" v-b-modal.backendChooserModal>{{backendUri}}</b-button>
+
+    <backend-chooser></backend-chooser>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue';
+import BackendChooser from '@/components/BackendChooser.vue';
+import { mapState } from 'vuex';
 
 export default {
   name: 'home',
   components: {
-    HelloWorld,
+    BackendChooser,
   },
+  computed: mapState({
+    'backendUri': state => state.backend.uri
+  }),
 };
 </script>
