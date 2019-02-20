@@ -12,6 +12,7 @@ const vuexPersist = new VuexPersist({
 const store = new Vuex.Store({
   state: {
     dataBlobs: [],
+    boxId: "",
     backend: {
       uri: "http://localhost:8888",
       username: "",
@@ -21,6 +22,9 @@ const store = new Vuex.Store({
   mutations: {
     setBackend (state, backend) {
       state.backend = backend
+    },
+    setBoxId (state, boxId) {
+      state.boxId = boxId
     },
     setDataBlob (state, data) {
       let found = false
