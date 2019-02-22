@@ -7,6 +7,7 @@
 
     <h2 class="mt-4">Choose app:</h2>
     <b-button variant="outline-primary" to="/hangarbaydoor" class="mt-4">Hangar Bay door</b-button>
+    <b-button variant="outline-primary" to="/malfunctions" class="mt-4">Engineer malfunctions list</b-button>
   </b-container>
 </template>
 
