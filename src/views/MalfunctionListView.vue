@@ -3,13 +3,13 @@
     <b-row>
       <b-col>
         <div class="column-container">
-          <div class="item">
-            <div class="title">This is a pretty long text to be on one line</div>
-            <div class="important"></div>
-            <div class="calibration">Calibration: 3⨉10min</div>
-          </div>
-          <div class="item">Two</div>
-          <div class="item">Three</div>
+          <draggable v-model="malfunctions" @end="end">
+            <div v-for="element in malfunctions" :key="element.id" class="item">
+              <div class="title">{{element.title}}</div>
+              <div class="important"></div>
+              <div class="calibration">Calibration: 3⨉10min</div>
+            </div>
+          </draggable>
         </div>
       </b-col>
       <b-col>2 of 3</b-col>
@@ -54,17 +54,56 @@ $icon-size: 2em;
 
 <script>
 import { startDataBlobSync } from '../storeSync'
-
-const DEFAULT_BOX = {}
+import draggable from 'vuedraggable'
 
 export default {
+  data() {
+    return {
+    }
+  },
   computed: {
-    box () {
-      return this.$store.state.dataBlobs.find(e => e.type === 'box' && e.id === this.$store.state.boxId) || DEFAULT_BOX
+    malfunctions: {
+      get() {
+        return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.state === 'broken'))
+      },
+      set() {
+        // no-op, handled in end()
+      }
     }
   },
   created () {
-    startDataBlobSync(`/box/${this.$store.state.boxId}`)
+    startDataBlobSync(`/task`)
   },
+  components: {
+      draggable,
+  },
+  methods: {
+    end (evt) {
+      const oldIndex = evt.oldIndex
+      const newIndex = evt.newIndex
+      const item = {...this.malfunctions[oldIndex]}
+      console.log(oldIndex  + " -> " + newIndex)
+
+      if (oldIndex === newIndex) {
+        // Drop on self, no-op
+      } else if (newIndex === 0) {
+        // First item in list
+        item.sort = this.malfunctions[0].sort - 1
+      } else if (newIndex === this.malfunctions.length - 1) {
+        // Last item in list
+        item.sort = this.malfunctions[this.malfunctions.length-1].sort + 1
+      } else if (newIndex < oldIndex) {
+        // Move between items above
+        item.sort = (this.malfunctions[newIndex-1].sort + this.malfunctions[newIndex].sort) / 2
+      } else {
+        // Move between items below
+        item.sort = (this.malfunctions[newIndex].sort + this.malfunctions[newIndex+1].sort) / 2
+      }
+      this.$store.dispatch('saveDataBlob', item)
+    },
+    sort (array) {
+      return array.slice().sort((a, b) => a.sort - b.sort)
+    },
+  }
 }
 </script>

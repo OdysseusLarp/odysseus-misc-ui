@@ -27,3 +27,26 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+
+## Task list
+
+```js
+{
+    type: 'task',
+    id: '...',
+    state: 'broken' / 'calibrating' / 'fixed' / 'hidden'
+    sort: 123.45
+    calibrationTime: 150
+    calibrationCount: 3
+    calibrationRemaining: [ 12, 13, 14 ]
+    calibrationSpeed: [ 0.8, 1.0, 1.1 ]
+    fixed_at: 423432432  // timestamp
+    title: 'Foo'
+    description: 'A longer explanation'
+    map: 'map.png'
+    important: true
+}
+```
+
+

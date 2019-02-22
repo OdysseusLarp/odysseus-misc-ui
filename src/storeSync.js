@@ -3,7 +3,7 @@ import io from 'socket.io-client'
 import axios from 'axios'
 
 export function fetchDataBlobs(path) {
-  axios.get(path, { baseURL: store.state.backend.uri })
+  axios.get(path)
   .then(response => {
     if (Array.isArray(response.data)) {
       response.data.forEach(e => store.commit('setDataBlob', e))

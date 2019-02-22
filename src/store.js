@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import VuexPersist from 'vuex-persist'
+import axios from 'axios'
 
 Vue.use(Vuex);
 
@@ -45,6 +46,32 @@ const store = new Vuex.Store({
     },
   },
   actions: {
+    saveDataBlob ({ commit, dispatch, state }, data) {
+      const type = data.type
+      const id = data.id
+      commit('setDataBlob', data)
+
+      axios.post(`/data/${type}/${id}`, data)
+      .then(response => {
+        commit('setDataBlob', response.data)
+      })
+      .catch(e => {
+        console.error("Error saving data blob, fetching back from server", e)
+        dispatch('fetchDataBlob', data)
+      })
+    },
+    fetchDataBlob ({ commit, state }, data) {
+      const type = data.type
+      const id = data.id
+
+      axios.get(`/data/${type}/${id}`)
+      .then(response => {
+        commit('setDataBlob', response.data)
+      })
+      .catch(e => {
+        console.error("Error fetching data blob: ", e)
+      })
+    }
 
   },
   plugins: [ vuexPersist.plugin ],
@@ -52,9 +79,6 @@ const store = new Vuex.Store({
 
 
 // DEBUGGING: Allow accessing store from global scope:
-// declare global {
-//   interface Window { store: any; }
-// }
-// window.store = store
+window.debug_store = store
 
 export default store
