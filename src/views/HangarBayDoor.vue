@@ -17,7 +17,7 @@ export default {
     }
   },
   created () {
-    startDataBlobSync(`/box/${this.$store.state.boxId}`)
+    startDataBlobSync('box', this.$store.state.boxId)
   },
 }
 </script>

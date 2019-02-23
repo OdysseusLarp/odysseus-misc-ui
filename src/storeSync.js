@@ -2,31 +2,24 @@ import store from './store'
 import io from 'socket.io-client'
 import axios from 'axios'
 
-export function fetchDataBlobs(path) {
-  axios.get(path)
-  .then(response => {
-    if (Array.isArray(response.data)) {
-      response.data.forEach(e => store.commit('setDataBlob', e))
-    } else {
-      store.commit('setDataBlob', response.data)
-    }
-  })
-  .catch(e => {
-    console.error("Error fetching data blobs (retrying in 5 secs): ", e)
-    setTimeout(() => fetchDataBlobs(path), 5000)
-  })
-}
-
 /*
  * Usage example:
- *   startDataBlobSync('/box')        -  sync all 'box' types
- *   startDataBlobSync('/box/myid')   -  sync single data blob
+ *   startDataBlobSync()               - sync everything
+ *   startDataBlobSync('box')          -  sync all 'box' types
+ *   startDataBlobSync('box','myid')   -  sync single data blob
  */
-export function startDataBlobSync(path) {
-  path = `/data${path || ''}`
+export function startDataBlobSync(type, id) {
+  let path
+  if (type && id) {
+    path = `/data/${type}/${id}`
+  } else if (type) {
+    path = `/data/${type}`
+  } else {
+    path = '/data'
+  }
   console.log("Initializing data blob syncing from " + store.state.backend.uri + " with path " + path)
 
-  fetchDataBlobs(path)
+  store.dispatch('syncDataBlobs', {type, id})
 
   const socket = io(`${store.state.backend.uri}/data?data=${path}`, {})
   socket.on('dataUpdate', (type, id, value) => {
