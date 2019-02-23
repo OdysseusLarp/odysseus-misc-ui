@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import HangarBayDoor from './views/HangarBayDoor'
-import MalfunctionListView from './views/MalfunctionListView'
+import TaskListView from './views/TaskListView'
 
 Vue.use(Router);
 
@@ -19,9 +19,9 @@ export default new Router({
       component: HangarBayDoor,
     },
     {
-      path: '/malfunctions',
-      name: 'malfunctions',
-      component: MalfunctionListView,
+      path: '/tasks',
+      name: 'tasks',
+      component: TaskListView,
     },
   ],
 });

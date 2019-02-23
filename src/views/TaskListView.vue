@@ -3,8 +3,8 @@
     <b-row>
       <b-col>
         <div class="column-container">
-          <draggable v-model="malfunctions" @end="end">
-            <div v-for="element in malfunctions" :key="element.id" class="item draggable">
+          <draggable v-model="broken" @end="end">
+            <div v-for="element in broken" :key="element.id" class="item draggable">
               <div class="title">{{element.title}}</div>
               <div class="important"></div>
               <div class="calibration">Calibration: 3⨉10min</div>
@@ -66,7 +66,7 @@ export default {
     }
   },
   computed: {
-    malfunctions: {
+    broken: {
       get() {
         return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.state === 'broken'))
       },
@@ -85,23 +85,23 @@ export default {
     end (evt) {
       const oldIndex = evt.oldIndex
       const newIndex = evt.newIndex
-      const item = {...this.malfunctions[oldIndex]}
+      const item = {...this.broken[oldIndex]}
       console.log(oldIndex  + " -> " + newIndex)
 
       if (oldIndex === newIndex) {
         // Drop on self, no-op
       } else if (newIndex === 0) {
         // First item in list
-        item.sort = this.malfunctions[0].sort - 1
-      } else if (newIndex === this.malfunctions.length - 1) {
+        item.sort = this.broken[0].sort - 1
+      } else if (newIndex === this.broken.length - 1) {
         // Last item in list
-        item.sort = this.malfunctions[this.malfunctions.length-1].sort + 1
+        item.sort = this.broken[this.broken.length-1].sort + 1
       } else if (newIndex < oldIndex) {
         // Move between items above
-        item.sort = (this.malfunctions[newIndex-1].sort + this.malfunctions[newIndex].sort) / 2
+        item.sort = (this.broken[newIndex-1].sort + this.broken[newIndex].sort) / 2
       } else {
         // Move between items below
-        item.sort = (this.malfunctions[newIndex].sort + this.malfunctions[newIndex+1].sort) / 2
+        item.sort = (this.broken[newIndex].sort + this.broken[newIndex+1].sort) / 2
       }
       this.$store.dispatch('saveDataBlob', item)
     },
