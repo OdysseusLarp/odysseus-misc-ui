@@ -1,8 +1,8 @@
 <template>
-  <b-container fluid class="bv-example-row">
-    <b-row>
-      <b-col>
-        <div class="column-container">
+  <div>
+        <div class="column-container col1">
+          <div class="col-title">Malfunctioning:</div>
+          <div class="col-note">&nbsp;</div>
           <draggable v-model="broken" @end="end">
             <div v-for="element in broken" :key="element.id" class="item draggable">
               <div class="title">{{element.title}}</div>
@@ -11,36 +11,61 @@
             </div>
           </draggable>
         </div>
-      </b-col>
-      <b-col>
-        <div class="column-container">
+        <div class="column-container col2">
+          <div class="col-title">Calibrating:</div>
+          <div class="col-note">Current calibration capacity: 3</div>
           <div v-for="element in calibrating" :key="element.id" class="item">
             <div class="title">{{element.title}}</div>
             <div class="important"></div>
             <div class="calibration">Calibration: 3⨉10min</div>
           </div>
         </div>
-      </b-col>
-      <b-col>
-        <div class="column-container">
+        <div class="column-container col3">
+          <div class="col-title">Fixed:</div>
+          <div class="col-note">&nbsp;</div>
           <div v-for="element in fixed" :key="element.id" class="item">
             <div class="title">{{element.title}}</div>
             <div class="important"></div>
             <div class="calibration">Calibration: 3⨉10min</div>
           </div>
         </div>
-      </b-col>
-    </b-row>
-  </b-container> 
+  </div>
 </template>
 
 <style lang="scss" scoped>
 $icon-size: 2em;
+$vmargin: 5%;
+$hmargin: 3%;
+$width: (100% - 4*$hmargin)/3;
 
 .column-container {
+  position: absolute;
+  top: $vmargin;
+  bottom: $vmargin;
+  width: $width;
+
   background-color: #aaa;
   padding: 1em;
-  margin: 1em;
+  overflow-y: auto;
+
+  &.col1 {
+    left: $hmargin;
+  }
+  &.col2 {
+    left: (2*$hmargin + $width);
+  }
+  &.col3 {
+    left: (3*$hmargin + 2*$width);
+  }
+
+  .col-title {
+    font-size: 120%;
+    font-weight: 500;
+  }
+  .col-note {
+    font-size: 70%;
+    margin-bottom: 1em;
+  }
 }
 .item {
   margin-bottom: 1em;
