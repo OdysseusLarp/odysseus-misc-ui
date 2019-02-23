@@ -12,8 +12,24 @@
           </draggable>
         </div>
       </b-col>
-      <b-col>2 of 3</b-col>
-      <b-col>3 of 3</b-col>
+      <b-col>
+        <div class="column-container">
+          <div v-for="element in calibrating" :key="element.id" class="item">
+            <div class="title">{{element.title}}</div>
+            <div class="important"></div>
+            <div class="calibration">Calibration: 3⨉10min</div>
+          </div>
+        </div>
+      </b-col>
+      <b-col>
+        <div class="column-container">
+          <div v-for="element in fixed" :key="element.id" class="item">
+            <div class="title">{{element.title}}</div>
+            <div class="important"></div>
+            <div class="calibration">Calibration: 3⨉10min</div>
+          </div>
+        </div>
+      </b-col>
     </b-row>
   </b-container> 
 </template>
@@ -73,7 +89,13 @@ export default {
       set() {
         // no-op, handled in end()
       }
-    }
+    },
+    calibrating () {
+      return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.state === 'calibrating'))
+    },
+    fixed () {
+      return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.state === 'fixed'))
+    },
   },
   created () {
     startDataBlobSync('task')
