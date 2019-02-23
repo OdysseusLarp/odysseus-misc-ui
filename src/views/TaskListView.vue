@@ -6,7 +6,7 @@
           <draggable v-model="broken" @end="end">
             <div v-for="element in broken" :key="element.id" class="item draggable">
               <div class="title">{{element.title}}</div>
-              <div class="important"></div>
+              <font-awesome-icon icon="exclamation-triangle" :class="element.important ? 'important active' : 'important'" @click="toggleImportant(element)" />
               <div class="calibration">Calibration: 3⨉10min</div>
             </div>
           </draggable>
@@ -16,7 +16,7 @@
           <div class="col-note">Current calibration capacity: 3</div>
           <div v-for="element in calibrating" :key="element.id" class="item">
             <div class="title">{{element.title}}</div>
-            <div class="important"></div>
+            <font-awesome-icon icon="exclamation-triangle" :class="element.important ? 'important active' : 'important'" @click="toggleImportant(element)" />
             <div class="calibration">Calibration: 3⨉10min</div>
           </div>
         </div>
@@ -25,7 +25,7 @@
           <div class="col-note">&nbsp;</div>
           <div v-for="element in fixed" :key="element.id" class="item">
             <div class="title">{{element.title}}</div>
-            <div class="important"></div>
+            <font-awesome-icon icon="exclamation-triangle" :class="element.important ? 'important active' : 'important'" @click="toggleImportant(element)" />
             <div class="calibration">Calibration: 3⨉10min</div>
           </div>
         </div>
@@ -77,12 +77,17 @@ $width: (100% - 4*$hmargin)/3;
     font-size: 90%;
   }
   .important {
-    background-color: #faa;
     position: absolute;
     top: 0;
     right: 0;
     width: $icon-size;
     height: $icon-size;
+    padding: 0.3em;
+    color: rgba(0,0,0,0.15);
+    cursor: pointer;
+    &.active {
+      color: #dc3545;
+    }
   }
   .calibration {
     margin-left: 0.5em;
@@ -155,6 +160,10 @@ export default {
     sort (array) {
       return array.slice().sort((a, b) => a.sort - b.sort)
     },
+    toggleImportant (item) {
+      item = {...item, important: !item.important}
+      this.$store.dispatch('saveDataBlob', item)
+    }
   }
 }
 </script>

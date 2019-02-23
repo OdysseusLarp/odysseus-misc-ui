@@ -4,6 +4,7 @@ import router from './router'
 import store from './store'
 import './registerServiceWorker'
 import './plugins/bootstrap-vue'
+import './plugins/vue-fontawesome'
 import axios from 'axios'
 Vue.config.productionTip = false;
 
