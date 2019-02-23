@@ -4,7 +4,7 @@
       <b-col>
         <div class="column-container">
           <draggable v-model="malfunctions" @end="end">
-            <div v-for="element in malfunctions" :key="element.id" class="item">
+            <div v-for="element in malfunctions" :key="element.id" class="item draggable">
               <div class="title">{{element.title}}</div>
               <div class="important"></div>
               <div class="calibration">Calibration: 3⨉10min</div>
@@ -48,6 +48,10 @@ $icon-size: 2em;
     margin-right: ($icon-size + 0.5em);
     font-size: 70%;
   }
+}
+
+.draggable {
+  cursor: grab;
 }
 </style>
 
