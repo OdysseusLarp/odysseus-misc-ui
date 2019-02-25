@@ -7,18 +7,23 @@
             <div v-for="item in broken" :key="item.id" class="item draggable">
               <div class="title">{{item.title}}</div>
               <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click="toggleImportant(item)" />
-              <div v-if="item.calibrationCount > 1" class="calibration">Calibration: {{item.calibrationCount}} ⨉ {{Math.round(item.calibrationTime/60)}} min</div>
-              <div v-else-if="item.calibrationCount === 1" class="calibration">Calibration: {{Math.round(item.calibrationTime/60)}} min</div>
+              <div v-if="item.calibrationCount > 1" class="calibration">Calibration: {{item.calibrationCount}} ⨉ {{formatDuration(item.calibrationTime)}}</div>
+              <div v-else-if="item.calibrationCount === 1" class="calibration">Calibration: {{formatDuration(item.calibrationTime)}}</div>
               <div v-else class="calibration">Calibration: None</div>
             </div>
           </draggable>
         </div>
         <div class="column-container col2">
           <div class="col-title">Calibrating:</div>
-          <div class="col-note">Current calibration capacity: 3</div>
+          <div class="col-note">Current calibration capacity: 3</div> <!-- FIXME: Dynamic value from somewhere -->
           <div v-for="item in calibrating" :key="item.id" class="item">
             <div class="title">{{item.title}}</div>
             <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click="toggleImportant(item)" />
+            <div class="calibration">Calibration progress:</div>
+            <div v-for="(remaining, index) in item.calibrationRemaining" :key="index">
+              <div class="progress-text">ETA ({{index+1}}/{{item.calibrationRemaining.length}}): {{formatDuration(remaining)}}</div>
+              <b-progress :value="Math.max(item.calibrationTime - remaining, item.calibrationTime*0.02)" :max="item.calibrationTime" />
+            </div>
           </div>
         </div>
         <div class="column-container col3">
@@ -72,8 +77,8 @@ $width: (100% - 4*$hmargin)/3;
   background-color: #bbb;
   position: relative;
   min-height: $icon-size;
+  padding: 0.5em;
   .title {
-    margin-left: 0.5em;
     margin-right: ($icon-size + 0.5em);
     font-size: 90%;
   }
@@ -91,8 +96,11 @@ $width: (100% - 4*$hmargin)/3;
     }
   }
   .calibration {
-    margin-left: 0.5em;
     margin-right: ($icon-size + 0.5em);
+    font-size: 70%;
+  }
+  .progress-text {
+    margin-top: 1em;
     font-size: 70%;
   }
 }
@@ -164,7 +172,14 @@ export default {
     toggleImportant (item) {
       item = {...item, important: !item.important}
       this.$store.dispatch('saveDataBlob', item)
-    }
+    },
+    formatDuration (time) {
+      if (time >= 45) {
+        return Math.round(time/60) + " min"
+      } else {
+        return Math.ceil(time/10)*10 + " s"
+      }
+    },
   }
 }
 </script>
