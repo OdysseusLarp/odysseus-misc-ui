@@ -4,9 +4,9 @@
           <div class="col-title">Malfunctioning:</div>
           <div class="col-note">&nbsp;</div>
           <draggable v-model="broken" @end="end">
-            <div v-for="item in broken" :key="item.id" class="item draggable">
+            <div v-for="item in broken" :key="item.id" class="item draggable" :class="{ selected: item.id === selectedId}" @click="select(item)">
               <div class="title">{{item.title}}</div>
-              <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click="toggleImportant(item)" />
+              <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
               <div v-if="item.calibrationCount > 1" class="calibration">Calibration: {{item.calibrationCount}} ⨉ {{formatDuration(item.calibrationTime)}}</div>
               <div v-else-if="item.calibrationCount === 1" class="calibration">Calibration: {{formatDuration(item.calibrationTime)}}</div>
               <div v-else class="calibration">Calibration: None</div>
@@ -16,9 +16,9 @@
         <div class="column-container col2">
           <div class="col-title">Calibrating:</div>
           <div class="col-note">Current calibration capacity: 3</div> <!-- FIXME: Dynamic value from somewhere -->
-          <div v-for="item in calibrating" :key="item.id" class="item">
+          <div v-for="item in calibrating" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click="select(item)">
             <div class="title">{{item.title}}</div>
-            <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click="toggleImportant(item)" />
+            <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
             <div class="calibration">Calibration progress:</div>
             <div v-for="(remaining, index) in item.calibrationRemaining" :key="index">
               <div class="progress-text">ETA ({{index+1}}/{{item.calibrationRemaining.length}}): {{formatDuration(remaining)}}</div>
@@ -29,9 +29,9 @@
         <div class="column-container col3">
           <div class="col-title">Fixed:</div>
           <div class="col-note">&nbsp;</div>
-          <div v-for="item in fixed" :key="item.id" class="item">
+          <div v-for="item in fixed" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click="select(item)">
             <div class="title">{{item.title}}</div>
-            <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click="toggleImportant(item)" />
+            <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
           </div>
         </div>
   </div>
@@ -78,6 +78,10 @@ $width: (100% - 4*$hmargin)/3;
   position: relative;
   min-height: $icon-size;
   padding: 0.5em;
+  &.selected {
+    background-color: #ffb;
+  }
+
   .title {
     margin-right: ($icon-size + 0.5em);
     font-size: 90%;
@@ -118,6 +122,7 @@ import draggable from 'vuedraggable'
 export default {
   data() {
     return {
+      selectedId: null
     }
   },
   computed: {
@@ -172,6 +177,10 @@ export default {
     toggleImportant (item) {
       item = {...item, important: !item.important}
       this.$store.dispatch('saveDataBlob', item)
+    },
+    select (item) {
+      this.selectedId = item.id
+      // FIXME: Add selected info to localStorage so other frames can react to it
     },
     formatDuration (time) {
       if (time >= 45) {
