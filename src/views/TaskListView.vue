@@ -1,10 +1,10 @@
 <template>
   <div>
-        <div class="column-container col1">
+        <div class="column-container col1" @click.stop="select({})">
           <div class="col-title">Malfunctioning:</div>
           <div class="col-note">&nbsp;</div>
           <draggable v-model="broken" @end="end">
-            <div v-for="item in broken" :key="item.id" class="item draggable" :class="{ selected: item.id === selectedId}" @click="select(item)">
+            <div v-for="item in broken" :key="item.id" class="item draggable" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
               <div class="title">{{item.title}}</div>
               <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
               <div v-if="item.calibrationCount > 1" class="calibration">Calibration: {{item.calibrationCount}} ⨉ {{formatDuration(item.calibrationTime)}}</div>
@@ -13,10 +13,10 @@
             </div>
           </draggable>
         </div>
-        <div class="column-container col2">
+        <div class="column-container col2" @click.stop="select({})">
           <div class="col-title">Calibrating:</div>
-          <div class="col-note">Current calibration capacity: 3</div> <!-- FIXME: Dynamic value from somewhere -->
-          <div v-for="item in calibrating" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click="select(item)">
+          <div class="col-note">Calibration capacity: 3 systems</div> <!-- FIXME: Dynamic value from somewhere -->
+          <div v-for="item in calibrating" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
             <div class="title">{{item.title}}</div>
             <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
             <div class="calibration">Calibration progress:</div>
@@ -26,10 +26,10 @@
             </div>
           </div>
         </div>
-        <div class="column-container col3">
+        <div class="column-container col3" @click.stop="select({})">
           <div class="col-title">Fixed:</div>
           <div class="col-note">&nbsp;</div>
-          <div v-for="item in fixed" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click="select(item)">
+          <div v-for="item in fixed" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
             <div class="title">{{item.title}}</div>
             <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
           </div>
@@ -78,6 +78,8 @@ $width: (100% - 4*$hmargin)/3;
   position: relative;
   min-height: $icon-size;
   padding: 0.5em;
+  cursor: pointer;
+  border-radius: 3px;
   &.selected {
     background-color: #ffb;
   }
@@ -119,6 +121,8 @@ $width: (100% - 4*$hmargin)/3;
 import { startDataBlobSync } from '../storeSync'
 import draggable from 'vuedraggable'
 
+const KEY = "odysseus.selectedTask"
+
 export default {
   data() {
     return {
@@ -143,6 +147,7 @@ export default {
   },
   created () {
     startDataBlobSync('task')
+    localStorage.removeItem(KEY)
   },
   components: {
       draggable,
@@ -180,7 +185,7 @@ export default {
     },
     select (item) {
       this.selectedId = item.id
-      // FIXME: Add selected info to localStorage so other frames can react to it
+      localStorage.setItem(KEY, JSON.stringify(item))
     },
     formatDuration (time) {
       if (time >= 45) {
