@@ -4,29 +4,29 @@
           <div class="col-title">Malfunctioning:</div>
           <div class="col-note">&nbsp;</div>
           <draggable v-model="broken" @end="end">
-            <div v-for="element in broken" :key="element.id" class="item draggable">
-              <div class="title">{{element.title}}</div>
-              <font-awesome-icon icon="exclamation-triangle" :class="element.important ? 'important active' : 'important'" @click="toggleImportant(element)" />
-              <div class="calibration">Calibration: 3⨉10min</div>
+            <div v-for="item in broken" :key="item.id" class="item draggable">
+              <div class="title">{{item.title}}</div>
+              <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click="toggleImportant(item)" />
+              <div v-if="item.calibrationCount > 1" class="calibration">Calibration: {{item.calibrationCount}} ⨉ {{Math.round(item.calibrationTime/60)}} min</div>
+              <div v-else-if="item.calibrationCount === 1" class="calibration">Calibration: {{Math.round(item.calibrationTime/60)}} min</div>
+              <div v-else class="calibration">Calibration: None</div>
             </div>
           </draggable>
         </div>
         <div class="column-container col2">
           <div class="col-title">Calibrating:</div>
           <div class="col-note">Current calibration capacity: 3</div>
-          <div v-for="element in calibrating" :key="element.id" class="item">
-            <div class="title">{{element.title}}</div>
-            <font-awesome-icon icon="exclamation-triangle" :class="element.important ? 'important active' : 'important'" @click="toggleImportant(element)" />
-            <div class="calibration">Calibration: 3⨉10min</div>
+          <div v-for="item in calibrating" :key="item.id" class="item">
+            <div class="title">{{item.title}}</div>
+            <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click="toggleImportant(item)" />
           </div>
         </div>
         <div class="column-container col3">
           <div class="col-title">Fixed:</div>
           <div class="col-note">&nbsp;</div>
-          <div v-for="element in fixed" :key="element.id" class="item">
-            <div class="title">{{element.title}}</div>
-            <font-awesome-icon icon="exclamation-triangle" :class="element.important ? 'important active' : 'important'" @click="toggleImportant(element)" />
-            <div class="calibration">Calibration: 3⨉10min</div>
+          <div v-for="item in fixed" :key="item.id" class="item">
+            <div class="title">{{item.title}}</div>
+            <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click="toggleImportant(item)" />
           </div>
         </div>
   </div>
@@ -71,6 +71,7 @@ $width: (100% - 4*$hmargin)/3;
   margin-bottom: 1em;
   background-color: #bbb;
   position: relative;
+  min-height: $icon-size;
   .title {
     margin-left: 0.5em;
     margin-right: ($icon-size + 0.5em);
