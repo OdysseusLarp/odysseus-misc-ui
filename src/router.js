@@ -4,6 +4,7 @@ import Home from './views/Home.vue'
 import HangarBayDoor from './views/HangarBayDoor'
 import TaskListView from './views/TaskListView'
 import TaskDetailsView from './views/TaskDetailsView'
+import InfoboardView from './views/InfoboardView'
 
 Vue.use(Router);
 
@@ -28,6 +29,11 @@ export default new Router({
       path: '/taskDetails',
       name: 'taskDetails',
       component: TaskDetailsView,
+    },
+    {
+      path: '/infoboard',
+      name: 'infoboard',
+      component: InfoboardView,
     },
   ],
 });
