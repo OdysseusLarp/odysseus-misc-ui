@@ -132,17 +132,17 @@ export default {
   computed: {
     broken: {
       get() {
-        return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.state === 'broken'))
+        return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'broken'))
       },
       set() {
         // no-op, handled in end()
       }
     },
     calibrating () {
-      return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.state === 'calibrating'))
+      return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'calibrating'))
     },
     fixed () {
-      return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.state === 'fixed'))
+      return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'fixed'))
     },
   },
   created () {

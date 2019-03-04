@@ -35,7 +35,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 {
     type: 'task',
     id: '...',
-    state: 'broken' / 'calibrating' / 'fixed' / 'hidden'
+    status: 'broken' / 'calibrating' / 'fixed' / 'hidden'
     sort: 123.45
     calibrationTime: 150
     calibrationCount: 3
