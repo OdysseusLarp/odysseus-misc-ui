@@ -3,6 +3,8 @@
     <div v-if="item.title">
       <div class="title">{{item.title}}</div>
       <div class="text" v-html="item.body"></div>
+      <div class="footer" v-if="item.time_to_jump">Time to jump: {{item.time_to_jump}}</div>
+      <div class="footer">Time now: {{new Date()}}</div>
     </div>
   </div>
 </template>
