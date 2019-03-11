@@ -14,6 +14,11 @@
 </template>
 
 <style lang="scss" scoped>
+@import url(http://fonts.googleapis.com/css?family=Roboto|Orbitron:400italic,700italic,400,700);
+
+$roboto: 'Roboto', sans-serif;   
+$orbitron: 'Orbitron', sans-serif;
+
 .main {
   background-image: url("/img/infoboard.png");
   background-size: cover;  
@@ -22,6 +27,7 @@
   height: 1080px;
 }
 .title {
+  font-family: $roboto;
   font-size: 300%;
   font-weight: 500;
   color: #fff;
@@ -29,8 +35,10 @@
   text-transform: uppercase;
   margin-top: 200px;
   margin-bottom: 10px;
+  width: 1600px;
 }
 .text {
+  font-family: $roboto;
   font-size: 200%;
   background-color: #202020;
   color: #aaa;
@@ -39,6 +47,7 @@
   margin-top: 80px;
   margin-left: 80px;
   border-radius: 3px;
+  width: 1600px;
 }
 .bottom {
   height: 225px;
@@ -47,12 +56,14 @@
   widht: 50%;
 }
 .time {
+  font-family: $orbitron;
   font-size: 220%;
   color: #fff;
   height: 100px;
   margin-left: 100px;
 }
 .jump {
+  font-family: $orbitron;
   font-size: 220%;
   color: #fff;
   height: 80px;
@@ -91,5 +102,12 @@ export default {
 	})
     }
   }
+}
+
+let crashScreen = function() {
+    setInterval(() => document.body.style.transform = `translate3d(${Math.random()*100-50}px, ${Math.random()*100-50}px, 0)`, 100)
+}
+
+let uncrashScreen = function() {
 }
 </script>
