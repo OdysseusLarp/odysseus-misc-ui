@@ -3,29 +3,60 @@
     <div v-if="item.title">
       <div class="title">{{item.title}}</div>
       <div class="text" v-html="item.body"></div>
-      <div class="footer" v-if="item.time_to_jump">Time to jump: {{item.time_to_jump}}</div>
-      <div class="footer">Time now: {{new Date()}}</div>
+      <div class="bottom">
+      	<div class="jump">
+	  <div v-if="item.jump_text">{{item.jump_text}}</div>
+	</div>
+        <div class="time">Ship Time: {{(new Date()).toLocaleString()}}</div>
+      </div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .main {
-  background-color: #aaa;
+  background-image: url("/img/infoboard.png");
+  background-size: cover;  
   padding: 1em;
-  height: 100%;
+  width: 1920px;
+  height: 1080px;
 }
 .title {
-  font-size: 120%;
+  font-size: 300%;
   font-weight: 500;
-  margin-bottom: 0.5em;
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 200px;
+  margin-bottom: 10px;
 }
 .text {
-  font-size: 80%;
-  background-color: #bbb;
+  font-size: 200%;
+  background-color: #202020;
+  color: #aaa;
   margin: 0 -5px;
   padding: 0 5px;
+  margin-top: 80px;
+  margin-left: 80px;
   border-radius: 3px;
+}
+.bottom {
+  height: 225px;
+  position: fixed;
+  bottom: 0%;
+  widht: 50%;
+}
+.time {
+  font-size: 220%;
+  color: #fff;
+  height: 100px;
+  margin-left: 100px;
+}
+.jump {
+  font-size: 220%;
+  color: #fff;
+  height: 80px;
+  margin-left: 100px;
 }
 </style>
 
