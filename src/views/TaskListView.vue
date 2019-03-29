@@ -128,6 +128,7 @@ import draggable from 'vuedraggable'
 import Box from '../components/Box'
 
 const KEY = "odysseus.selectedTask"
+const SHOW_FIXED_DURATION = 30 * 60 * 1000
 
 export default {
   data() {
@@ -148,7 +149,7 @@ export default {
       return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'calibrating'))
     },
     fixed () {
-      return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'fixed'))
+      return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'fixed' && t.fixed_at && t.fixed_at > Date.now() - SHOW_FIXED_DURATION))
     },
     calibratingCount () {
       return this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'calibrating').map(t => t.calibrationCount).reduce((a,b) => a+b, 0)
