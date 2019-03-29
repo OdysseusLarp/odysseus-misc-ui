@@ -114,6 +114,13 @@ $width: (100% - 4*$hmargin)/3;
 }
 </style>
 
+<style lang="scss">
+// Override progress bar transition, should match 'DECREASE_INTERVAL' time in backend 'tasks.js'
+.progress-bar {
+  transition: width 2s linear !important;
+}
+</style>
+
 
 <script>
 import { startDataBlobSync } from '../storeSync'
