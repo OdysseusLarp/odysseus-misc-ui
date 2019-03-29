@@ -1,46 +1,46 @@
 <template>
   <div>
-        <div class="column-container col1" @click.stop="select({})">
-          <div class="col-title">Malfunctioning:</div>
-          <div class="col-note">&nbsp;</div>
-          <draggable v-model="broken" @end="end">
-            <div v-for="item in broken" :key="item.id" class="item draggable" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
-              <div class="title">{{item.title}}</div>
-              <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
-              <div v-if="item.calibrationCount > 1" class="calibration">Calibration: {{item.calibrationCount}} ⨉ {{formatDuration(item.calibrationTime)}}</div>
-              <div v-else-if="item.calibrationCount === 1" class="calibration">Calibration: {{formatDuration(item.calibrationTime)}}</div>
-              <div v-else class="calibration">Calibration: None</div>
-            </div>
-          </draggable>
-        </div>
-        <div class="column-container col2" @click.stop="select({})">
-          <div class="col-title">Calibrating:</div>
-          <div class="col-note">Calibration capacity: 3 systems</div> <!-- FIXME: Dynamic value from somewhere -->
-          <div v-for="item in calibrating" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
+    <div class="column-container col1" @click.stop="select({})">
+      <Box :title="'Malfunctions (' + broken.length + ')'" color="yellow" style="height: 100%">
+        <draggable v-model="broken" @end="end">
+          <div v-for="item in broken" :key="item.id" class="item draggable" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
             <div class="title">{{item.title}}</div>
             <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
-            <div class="calibration">Calibration progress:</div>
-            <div v-for="(remaining, index) in item.calibrationRemaining" :key="index">
-              <div class="progress-text">ETA ({{index+1}}/{{item.calibrationRemaining.length}}): {{formatDuration(remaining)}}</div>
-              <b-progress :value="Math.max(item.calibrationTime - remaining, item.calibrationTime*0.02)" :max="item.calibrationTime" />
-            </div>
+            <div v-if="item.calibrationCount > 1" class="calibration">Calibration: {{item.calibrationCount}} ⨉ {{formatDuration(item.calibrationTime)}}</div>
+            <div v-else-if="item.calibrationCount === 1" class="calibration">Calibration: {{formatDuration(item.calibrationTime)}}</div>
+            <div v-else class="calibration">Calibration: None</div>
+          </div>
+        </draggable>
+      </Box>
+    </div>
+    <div class="column-container col2" @click.stop="select({})">
+      <Box :title="'Calibration (' + calibratingCount + '/3)'" color="yellow" style="height: 100%"> <!-- FIXME: Hard-coded 3 slots -->
+        <div v-for="item in calibrating" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
+          <div class="title">{{item.title}}</div>
+          <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
+          <div class="calibration">Calibration progress:</div>
+          <div v-for="(remaining, index) in item.calibrationRemaining" :key="index">
+            <div class="progress-text">ETA ({{index+1}}/{{item.calibrationRemaining.length}}): {{formatDuration(remaining)}}</div>
+            <b-progress :value="Math.max(item.calibrationTime - remaining, item.calibrationTime*0.02)" :max="item.calibrationTime" />
           </div>
         </div>
-        <div class="column-container col3" @click.stop="select({})">
-          <div class="col-title">Fixed:</div>
-          <div class="col-note">&nbsp;</div>
-          <div v-for="item in fixed" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
-            <div class="title">{{item.title}}</div>
-            <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
-          </div>
+      </Box>
+    </div>
+    <div class="column-container col3" @click.stop="select({})">
+      <Box title="Resolved" color="blue" style="height: 100%">
+        <div v-for="item in fixed" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
+          <div class="title">{{item.title}}</div>
+          <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
         </div>
+      </Box>
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 $icon-size: 2em;
 $vmargin: 5%;
-$hmargin: 3%;
+$hmargin: 2%;
 $width: (100% - 4*$hmargin)/3;
 
 .column-container {
@@ -49,8 +49,6 @@ $width: (100% - 4*$hmargin)/3;
   bottom: $vmargin;
   width: $width;
 
-  background-color: #aaa;
-  padding: 1em;
   overflow-y: auto;
 
   &.col1 {
@@ -120,6 +118,7 @@ $width: (100% - 4*$hmargin)/3;
 <script>
 import { startDataBlobSync } from '../storeSync'
 import draggable from 'vuedraggable'
+import Box from '../components/Box'
 
 const KEY = "odysseus.selectedTask"
 
@@ -144,13 +143,16 @@ export default {
     fixed () {
       return this.sort(this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'fixed'))
     },
+    calibratingCount () {
+      return this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'calibrating').map(t => t.calibrationCount).reduce((a,b) => a+b, 0)
+    }
   },
   created () {
     startDataBlobSync('task')
     localStorage.removeItem(KEY)
   },
   components: {
-      draggable,
+      draggable, Box,
   },
   methods: {
     end (evt) {
