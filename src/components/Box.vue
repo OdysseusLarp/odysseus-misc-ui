@@ -4,9 +4,7 @@
       <div class="box-title">{{title}}</div>
     </div>
     <div class="bg">
-      <div class="content">
-        <slot></slot>
-      </div>
+      <slot></slot>
     </div>
   </div>
 </template>

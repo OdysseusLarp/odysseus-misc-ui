@@ -9,6 +9,7 @@
     <b-button variant="outline-primary" to="/hangarbaydoor" class="mt-4">Hangar Bay doors</b-button>
     <b-button variant="outline-primary" to="/tasks" class="mt-4">Engineer tasks list</b-button>
     <b-button variant="outline-primary" to="/taskDetails" class="mt-4">Task details</b-button>
+    <b-button variant="outline-primary" to="/taskMap" class="mt-4">Task map</b-button>
     <b-button variant="outline-primary" to="/infoboard" class="mt-4">Infoboard</b-button>
   </b-container>
 </template>
