@@ -1,42 +1,33 @@
 <template>
-  <div class="main">
+  <Box :title="item.title" color="yellow" style="height: 100%">
     <div v-if="item.title">
-      <div class="title">{{item.title}}</div>
       <div class="description">{{item.description}}</div>
       <div v-if="item.calibrationCount > 1" class="calibration">Estimated calibration time: {{item.calibrationCount}} ⨉ {{formatDuration(item.calibrationTime)}}</div>
       <div v-else-if="item.calibrationCount === 1" class="calibration">Estimated calibration time: {{formatDuration(item.calibrationTime)}}</div>
       <div v-else class="calibration">Estimated calibration time: None</div>
     </div>
-  </div>
+  </Box>
 </template>
 
 <style lang="scss" scoped>
-.main {
-  background-color: #aaa;
-  padding: 1em;
-  height: 100%;
-}
-.title {
-  font-size: 120%;
-  font-weight: 500;
-  margin-bottom: 0.5em;
-}
 .description {
-  font-size: 80%;
-  background-color: #bbb;
+  // font-size: 80%;
+  // background-color: #bbb;
   margin: 0 -5px;
   padding: 0 5px;
   border-radius: 3px;
 }
 .calibration {
-  font-size: 70%;
+  font-size: 80%;
   margin-top: 1em;
+  font-style: italic;
 }
 </style>
 
 
 <script>
 const KEY = "odysseus.selectedTask"
+import Box from '../components/Box'
 
 export default {
   data() {
@@ -64,6 +55,9 @@ export default {
         return Math.ceil(time/10)*10 + " s"
       }
     },
-  }
+  },
+  components: {
+    Box,
+  },
 }
 </script>
