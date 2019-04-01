@@ -20,40 +20,47 @@ $roboto: 'Roboto', sans-serif;
 $orbitron: 'Orbitron', sans-serif;
 
 .main {
+  position: fixed;
   background-image: url("/img/infoboard.png");
   background-size: cover;  
   padding: 1em;
   width: 1920px;
   height: 1080px;
+  z-index: 1;
 }
 .title {
   font-family: $roboto;
-  font-size: 300%;
-  font-weight: 500;
+  font-size: 500%;
+  font-weight: 700;
   color: #fff;
   text-align: center;
   text-transform: uppercase;
-  margin-top: 200px;
+  margin-top: 175px;
   margin-bottom: 10px;
   width: 1600px;
 }
 .text {
   font-family: $roboto;
-  font-size: 200%;
+  font-size: 400%;
   background-color: #202020;
   color: #aaa;
   margin: 0 -5px;
   padding: 0 5px;
-  margin-top: 80px;
+  margin-top: 10px;
   margin-left: 80px;
   border-radius: 3px;
+  position: fixed;
   width: 1600px;
+  height: 480px;
+  overflow: hidden;
+  z-index: -1;
 }
 .bottom {
   height: 225px;
   position: fixed;
   bottom: 0%;
   widht: 50%;
+  z-index: 1;
 }
 .time {
   font-family: $orbitron;
