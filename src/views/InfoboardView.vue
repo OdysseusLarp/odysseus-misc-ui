@@ -95,7 +95,7 @@ export default {
   methods: {
     fetch () {
       console.log('Loading data')
-      axios.get('http://localhost:8888/infoboard', {data: null})
+      axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
 	.then(response => { this.item = response.data })
 	.catch(function (error) {
 	  console.log(error);
