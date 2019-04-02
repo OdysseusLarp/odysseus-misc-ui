@@ -49,7 +49,7 @@ const KEY = "odysseus.selectedTask"
 const ANIM_TIMEOUT = 60
 const ANIM_LENGTH = 12
 const MAP_SIZE = 450
-const ANIMATIONS = Array(20).fill(0).map((e, index) => `/map/map${twoDigit(index+1)}.png`)
+const ANIMATIONS = Array(20).fill(0).map((e, index) => `map/map${twoDigit(index+1)}.png`)
 import Box from '../components/Box'
 
 function twoDigit(n) {
@@ -74,6 +74,11 @@ export default {
   },
   methods: {
     update () {
+      const newItem = JSON.parse(localStorage.getItem(KEY) || '{}')
+      if (this.item.map === newItem.map && this.item.mapX === newItem.mapX && this.item.mapY === newItem.mapY) {
+        // Don't update unnecessarily
+        return;
+      }
       this.item = JSON.parse(localStorage.getItem(KEY) || '{}')
       if (this.item.map) {
         this.images = this.randomSet('/map/' + this.item.map)
