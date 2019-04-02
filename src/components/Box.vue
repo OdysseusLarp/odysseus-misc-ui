@@ -19,19 +19,19 @@
   border-bottom: 1px solid;
   border-left: 17px solid;
   // border-image: url(../assets/img/box-blue.png) 50% 10% 0% 10% stretch;
-  border-image: url(../assets/img/box-blue.png) 94 56 1 34 stretch;
+  border-image: url(../../public/img/box-blue.png) 94 56 1 34 stretch;
   position: relative;
   &.yellow {
-    border-image-source: url(../assets/img/box-yellow.png);
+    border-image-source: url(../../public/img/box-yellow.png);
   }
   &.blue {
-    border-image-source: url(../assets/img/box-blue.png);
+    border-image-source: url(../../public/img/box-blue.png);
   }
   &.violet {
-    border-image-source: url(../assets/img/box-violet.png);
+    border-image-source: url(../../public/img/box-violet.png);
   }
   &.turquoise {
-    border-image-source: url(../assets/img/box-turquoise.png);
+    border-image-source: url(../../public/img/box-turquoise.png);
   }
 }
 .bg {

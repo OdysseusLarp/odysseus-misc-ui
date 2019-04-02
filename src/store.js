@@ -15,9 +15,9 @@ const store = new Vuex.Store({
     dataBlobs: [],
     boxId: "",
     backend: {
-      uri: "http://localhost:8888",
-      username: "",
-      password: "",
+      uri: process.env.VUE_APP_BACKEND_URI,
+      username: process.env.VUE_APP_USERNAME || "",
+      password: process.env.VUE_APP_PASSWORD || "",
     }
   },
   mutations: {

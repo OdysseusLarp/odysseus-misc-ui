@@ -14,14 +14,14 @@
 </template>
 
 <style lang="scss" scoped>
-@import url(http://fonts.googleapis.com/css?family=Roboto|Orbitron:400italic,700italic,400,700);
+@import url(https://fonts.googleapis.com/css?family=Roboto|Orbitron:400italic,700italic,400,700);
 
 $roboto: 'Roboto', sans-serif;   
 $orbitron: 'Orbitron', sans-serif;
 
 .main {
   position: fixed;
-  background-image: url("/img/infoboard.png");
+  background-image: url("../../public/img/infoboard.png");
   background-size: cover;  
   padding: 1em;
   width: 1920px;
