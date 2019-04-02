@@ -81,7 +81,7 @@ export default {
       }
       this.item = JSON.parse(localStorage.getItem(KEY) || '{}')
       if (this.item.map) {
-        this.images = this.randomSet('/map/' + this.item.map)
+        this.images = this.randomSet('map/' + this.item.map)
         if (this.item.mapX && this.item.mapY) {
           this.x = this.item.mapX / MAP_SIZE * 100
           this.y = this.item.mapY / MAP_SIZE * 100
