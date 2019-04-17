@@ -1,13 +1,14 @@
 <template>
   <div class="main">
     <div v-if="item.title">
+      <div class="solar">{{solar}}</div>
       <div class="title">{{item.title}}</div>
       <div class="text" v-html="item.body"></div>
       <div class="bottom">
       	<div class="jump">
 	  <div v-if="item.jump_text">{{item.jump_text}}</div>
 	</div>
-        <div class="time">Ship Time: {{(new Date()).toLocaleString()}}</div>
+        <div class="time">Ship Time: {{time}}</div>
       </div>
     </div>
   </div>
@@ -28,6 +29,13 @@ $orbitron: 'Orbitron', sans-serif;
   height: 1080px;
   z-index: 1;
 }
+.solar {
+  font-family: $orbitron;
+  font-size: 300%;
+  color: #fff;
+  margin-left: 1240px;
+  margin-top: 50px;
+}
 .title {
   font-family: $roboto;
   font-size: 500%;
@@ -35,7 +43,7 @@ $orbitron: 'Orbitron', sans-serif;
   color: #fff;
   text-align: center;
   text-transform: uppercase;
-  margin-top: 175px;
+  margin-top: 50px;
   margin-bottom: 10px;
   width: 1600px;
 }
@@ -87,11 +95,13 @@ export default {
     return {
       item: {
         title: 'Loading', body: 'Wait until data is loaded'
-      }
+      },
+      solar: 'SOLAR',
+      time: (new Date()).toLocaleString()
     }
   },
   created () {
-    this.$options.interval = setInterval(this.fetch, 5000)
+    this.$options.interval = setInterval(this.fetch, 1000)
   },
   mounted () {
     fetch
@@ -101,12 +111,21 @@ export default {
   },
   methods: {
     fetch () {
-      console.log('Loading data')
-      axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
-	.then(response => { this.item = response.data })
-	.catch(function (error) {
-	  console.log(error);
-	})
+      const d = new Date();
+      this.time = d.toLocaleString();
+      if( d.getMinutes() % 2 === 0 ) {
+        this.solar = "SOLAR";
+      } else {
+	this.solar = "LUNAR";
+      }
+      if( d.getSeconds() % 5 === 0 ) {
+        console.log('Loading data')
+        axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
+	  .then(response => { this.item = response.data })
+	  .catch(function (error) {
+	    console.log(error);
+	  });
+      }
     }
   }
 }
