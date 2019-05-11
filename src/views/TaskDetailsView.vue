@@ -16,6 +16,7 @@
   margin: 0 -5px;
   padding: 0 5px;
   border-radius: 3px;
+  white-space: pre-line;
 }
 .calibration {
   font-size: 80%;
