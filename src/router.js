@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import HangarBayDoor from './views/HangarBayDoor'
+import AirlockView from './views/AirlockView'
 import TaskListView from './views/TaskListView'
 import TaskDetailsView from './views/TaskDetailsView'
 import TaskMapView from './views/TaskMapView'
@@ -20,6 +21,11 @@ export default new Router({
       path: '/hangarbaydoor',
       name: 'hangarbaydoor',
       component: HangarBayDoor,
+    },
+    {
+      path: '/airlock',
+      name: 'airlock',
+      component: AirlockView,
     },
     {
       path: '/tasks',
