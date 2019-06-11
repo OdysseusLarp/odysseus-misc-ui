@@ -14,7 +14,7 @@
       </Box>
     </div>
     <div class="column-container col2" @click.stop="select({})">
-      <Box :title="'Calibration (' + calibratingCount + '/3)'" color="yellow" style="height: 100%"> <!-- FIXME: Hard-coded 3 slots -->
+      <Box :title="'Calibration (' + calibratingCount + '/' + calibrationSlots + ')'" color="yellow" style="height: 100%">
         <div v-for="item in calibrating" :key="item.id" class="item" :class="{ selected: item.id === selectedId}" @click.stop="select(item)">
           <div class="title">{{item.title}}</div>
           <font-awesome-icon icon="exclamation-triangle" :class="item.important ? 'important active' : 'important'" @click.stop="toggleImportant(item)" />
@@ -153,10 +153,20 @@ export default {
     },
     calibratingCount () {
       return this.$store.state.dataBlobs.filter(t => t.type === 'task' && t.status === 'calibrating').map(t => t.calibrationCount).reduce((a,b) => a+b, 0)
+    },
+    calibrationSlots () {
+      const blob = this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'calibration')
+      if (blob) {
+        return blob.slots
+      } else {
+        console.error("Data blob ship:calibration not found, defaulting to three")
+        return 3
+      }
     }
   },
   created () {
     startDataBlobSync('task')
+    startDataBlobSync('ship', 'calibration')
     localStorage.removeItem(KEY)
   },
   components: {
