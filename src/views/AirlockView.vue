@@ -1,6 +1,6 @@
 <template>
-  <div class="airlock-ui">
-    <div class="edge left" :class="airlockState"></div>
+  <div class="airlock-ui"  :class="airlockState">
+    <div class="edge left"></div>
     <div class="sections">
 
       <div class="section">
@@ -22,11 +22,13 @@
 
       <div class="section">
         <div class="header">Time</div>
-        <div class="content" :class="airlockState">{{time}}</div>
+        <div class="content" :class="airlockState">
+          <timer :target="testTarget"></timer>
+        </div>
       </div>
 
     </div>
-    <div class="edge right" :class="airlockState"></div>
+    <div class="edge right"></div>
   </div>
 </template>
 
@@ -101,24 +103,26 @@ $bg-blackish: #231f20;  /* gaps and sidebars */
   font-size: 30px;
 }
 
-.action.ok, .content.ok, .edge.ok { background-color: $bg-green; }
+.action.ok, .content.ok, .ok > .edge { background-color: $bg-green; }
 .header.ok { background-color: $bg-darkgreen; border-color: $bg-green; }
 
-.action.error, .content.error, .edge.error { background-color: $bg-red; }
+.action.error, .content.error, .error > .edge { background-color: $bg-red; }
 .header.error { background-color: $bg-darkred; border-color: $bg-red; }
 </style>
 
 <script>
+import Timer from '@/components/Timer.vue';
 import { startDataBlobSync } from '../storeSync'
 
 const DEFAULT_BOX = {}
 
 export default {
-  data() {
-    return {
-      timeCounter: 0
-    }
+  components: {
+    Timer,
   },
+  data: () => ({
+    testTarget: new Date(new Date().getTime() + 15*60*1000)
+  }),
   computed: {
     box () {
       return this.$store.state.dataBlobs.find(e => e.type === 'box' && e.id === this.$store.state.boxId) || DEFAULT_BOX
@@ -129,25 +133,14 @@ export default {
     doorState () {
       return 'open'
     },
-    time () {
-      var t = this.timeCounter, h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, s = Math.floor(t % 60)
-      if (h < 10) h = "0" + h
-      if (m < 10) m = "0" + m
-      if (s < 10) s = "0" + s
-      return h + ":" + m + ":" + s
-    }
   },
   methods: {
-    incrementTime () {
-      this.timeCounter = this.timeCounter + 1
-    },
     openDoor () {
       // TODO
     }
   },
   created () {
     startDataBlobSync('box', this.$store.state.boxId)
-    setInterval(this.incrementTime, 1000)
   },
 }
 </script>
