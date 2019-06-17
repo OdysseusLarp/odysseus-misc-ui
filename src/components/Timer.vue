@@ -5,10 +5,15 @@
 </template>
 
 <style lang="scss" scoped>
-.timer > .digit {
+.digit, .sep {
   display: inline-block;
-  width: 0.8em;
   text-align: center;
+}
+.digit {
+  width: 0.85em;
+}
+.sep {
+  width: 0.4em;
 }
 </style>
 
