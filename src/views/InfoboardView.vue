@@ -115,7 +115,7 @@ export default {
     fetch () {
       const d = new Date();
       this.time = d.toLocaleString();
-      if( d.getHours() > 5 && d.getHours() < 13 ) {
+      if( ( d.getHours() > 15 && d.getHours() < 20 ) || ( d.getHours() > 3 && d.getHours() < 12 ) ) {
         this.solar = "SOLAR";
       } else {
 	this.solar = "LUNAR";
