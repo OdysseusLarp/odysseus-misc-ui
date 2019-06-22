@@ -114,10 +114,14 @@ export default {
   computed: {
     jumpStatus() {
       return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'jump').status
+    },
+    jumpCountdown() {
+      return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'jumpstate').jumpT
     }
   },
   created () {
     startDataBlobSync('ship', 'jump')
+    startDataBlobSync('ship', 'jumpstate')
     this.$options.interval = setInterval(this.fetch, 1000)
   },
   mounted () {
@@ -137,7 +141,7 @@ export default {
       }
       const status = this.jumpStatus
       this.jump_text = '';
-      if( status === 'broken' ) {
+      if( status === 'broken' || status === 'cooldown' ) {
         this.showBody = true;
 	this.jumpTime = 0;
       }
@@ -154,7 +158,7 @@ export default {
 	this.jump_text = 'Ready for jump'
       }
       if( status === 'jump_initiated' ) {
-	this.item = { title: 'Jump countdown initated', body: 'Ship jumping in less than a minute' }; 
+	this.item = { title: 'Jump countdown initated', body: `Ship jumping in <strong>${this.jumpCountdown}</strong>` };
       } else if( status === 'jumping' && this.jumpTime === 0 ) {
 	this.item = { title: 'Jumping now', body: 'Ship jumping' }; 
         this.jumpTime = (new Date()).getTime()
