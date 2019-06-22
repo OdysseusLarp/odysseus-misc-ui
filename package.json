@@ -15,6 +15,7 @@
     "bootstrap-vue": "^2.0.0-rc.20",
     "i": "^0.3.6",
     "npm": "^6.9.0",
+    "odysseus-static": "^0.0.2",
     "register-service-worker": "^1.5.2",
     "socket.io-client": "^2.2.0",
     "vue": "^2.6.10",

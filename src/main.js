@@ -6,8 +6,12 @@ import './registerServiceWorker'
 import './plugins/bootstrap-vue'
 import './plugins/vue-fontawesome'
 import axios from 'axios'
+import { defineCustomElements, applyPolyfills } from 'odysseus-static/loader'
 Vue.config.productionTip = false;
 
+// Tell Vue to ignore our custom web component and then load it
+Vue.config.ignoredElements = [/^odysseus-static$/];
+applyPolyfills().then(() => defineCustomElements(window));
 
 // Setup axios backend URI (page is reloaded if it changes)
 console.log("Using backend URL: " + store.state.backend.uri)

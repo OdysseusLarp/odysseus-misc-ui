@@ -1,18 +1,23 @@
 <template>
-  <div v-if="showBody" class="main">
-    <div v-if="item.title">
-      <div class="solar">{{solar}}</div>
-      <div class="title">{{item.title}}</div>
-      <div class="text" v-html="item.body"></div>
-      <div class="bottom">
-      	<div class="jump">
-	  <div v-if="jump_text">{{jump_text}}</div>
-	</div>
-        <div class="time">Ship Time: {{time}}</div>
+  <div>
+    <div v-if="showBody" class="main" ref="infoboardContainer">
+      <div v-if="item.title">
+        <div class="solar">{{solar}}</div>
+        <div class="title">{{item.title}}</div>
+        <div class="text" v-html="item.body"></div>
+        <div class="bottom">
+          <div class="jump">
+      <div v-if="jump_text">{{jump_text}}</div>
+    </div>
+          <div class="time">Ship Time: {{time}}</div>
+        </div>
       </div>
     </div>
-  </div>
-  <div v-else class="blank">
+    <div v-else>
+      <!-- Show TV-static screen during 'jumping' state -->
+      <odysseus-static></odysseus-static>
+    </div>
+    <div class="dark-bg"></div>
   </div>
 </template>
 
@@ -22,10 +27,16 @@
 $roboto: 'Roboto', sans-serif;   
 $orbitron: 'Orbitron', sans-serif;
 
-.blank {
-  width: 1920px;
-  height: 1080px;
-  background: rgba(0, 0, 0, 1.0);
+// Dark bg behind everything else, so that when the screen shakes, the edges are not white
+.dark-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -999;
+  background: #1f1f1f;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .main {
   position: fixed;
@@ -74,7 +85,7 @@ $orbitron: 'Orbitron', sans-serif;
   height: 225px;
   position: fixed;
   bottom: 0%;
-  widht: 50%;
+  width: 50%;
   z-index: 1;
 }
 .time {
@@ -160,10 +171,10 @@ export default {
       if( status === 'jump_initiated' ) {
 	this.item = { title: 'Jump countdown initated', body: `Ship jumping in <strong>${this.jumpCountdown}</strong>` };
       } else if( status === 'jumping' && this.jumpTime === 0 ) {
-	this.item = { title: 'Jumping now', body: 'Ship jumping' }; 
+	this.item = { title: 'Jumping now', body: 'Ship jumping' };
         this.jumpTime = (new Date()).getTime()
         clearInterval(this.$options.interval)
-        this.$options.interval = setInterval(this.brokenFetch, 100)
+        this.$options.interval = setInterval(this.brokenFetch, 60)
       } else if( d.getSeconds() % 5 === 0 ) {
         axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
 	  .then(response => {
@@ -179,10 +190,11 @@ export default {
       if( now - this.jumpTime > 5000 ) {
         clearInterval(this.$options.interval)
         this.$options.interval = setInterval(this.fetch, 1000)
-	this.showBody = false
-	this.item = { title: '', body: '' }; 
+        this.showBody = false
+        this.item = { title: '', body: '' };
+        this.$refs.infoboardContainer.style.transform = 'none';
       } else {
-        document.body.style.transform = `translate3d(${Math.random()*100-50}px, ${Math.random()*100-50}px, 0)`
+        this.$refs.infoboardContainer.style.transform = `translate3d(${Math.random()*100-50}px, ${Math.random()*100-50}px, 0)`
       }
     }
 
