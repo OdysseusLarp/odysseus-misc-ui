@@ -129,7 +129,7 @@ export default {
   methods: {
     fetch () {
       const d = new Date()
-      this.time = "Year 542, " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds()
+      this.time = "Year 542, " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "" ) + d.getSeconds()
       if( ( d.getHours() > 15 && d.getHours() < 20 ) || ( d.getHours() > 3 && d.getHours() < 12 ) ) {
         this.solar = "SOLAR"
       } else {
