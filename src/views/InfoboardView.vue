@@ -1,16 +1,18 @@
 <template>
-  <div class="main" id="mainDisplay">
+  <div v-if="showBody" class="main">
     <div v-if="item.title">
       <div class="solar">{{solar}}</div>
       <div class="title">{{item.title}}</div>
       <div class="text" v-html="item.body"></div>
       <div class="bottom">
       	<div class="jump">
-	  <div v-if="item.jump_text">{{item.jump_text}}</div>
+	  <div v-if="jump_text">{{jump_text}}</div>
 	</div>
         <div class="time">Ship Time: {{time}}</div>
       </div>
     </div>
+  </div>
+  <div v-else class="blank">
   </div>
 </template>
 
@@ -20,6 +22,11 @@
 $roboto: 'Roboto', sans-serif;   
 $orbitron: 'Orbitron', sans-serif;
 
+.blank {
+  width: 1920px;
+  height: 1080px;
+  background: rgba(0, 0, 0, 1.0);
+}
 .main {
   position: fixed;
   background-image: url("../../public/img/infoboard.png");
@@ -88,6 +95,7 @@ $orbitron: 'Orbitron', sans-serif;
 
 
 <script>
+import { startDataBlobSync } from '../storeSync'
 import axios from 'axios'
 
 export default {
@@ -98,11 +106,18 @@ export default {
       },
       solar: 'SOLAR',
       time: (new Date()).toLocaleString(),
-      jumping: false,
-      jumpTime: 0
+      jump_text: '',
+      jumpTime: 0,
+      showBody: true
+    }
+  },
+  computed: {
+    jumpStatus() {
+      return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'jump').status
     }
   },
   created () {
+    startDataBlobSync('ship', 'jump')
     this.$options.interval = setInterval(this.fetch, 1000)
   },
   mounted () {
@@ -113,45 +128,61 @@ export default {
   },
   methods: {
     fetch () {
-      const d = new Date();
-      this.time = "Year 542, " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+      const d = new Date()
+      this.time = "Year 542, " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds()
       if( ( d.getHours() > 15 && d.getHours() < 20 ) || ( d.getHours() > 3 && d.getHours() < 12 ) ) {
-        this.solar = "SOLAR";
+        this.solar = "SOLAR"
       } else {
-	this.solar = "LUNAR";
+	this.solar = "LUNAR"
       }
-      if( d.getSeconds() % 5 === 0 ) {
+      const status = this.jumpStatus
+      this.jump_text = '';
+      if( status === 'broken' ) {
+        this.showBody = true;
+	this.jumpTime = 0;
+      }
+      if( status === 'calculating' ) {
+	this.jump_text = 'Calculating jump'
+      }
+      if( status === 'preparation' ) {
+	this.jump_text = 'Preparing for jump'
+      }
+      if( status === 'prep_complete' ) {
+	this.jump_text = 'Prepared for jump'
+      }
+      if( status === 'ready' ) {
+	this.jump_text = 'Ready for jump'
+      }
+      if( status === 'jump_initiated' ) {
+	this.item = { title: 'Jump countdown initated', body: 'Ship jumping in less than a minute' }; 
+      } else if( status === 'jumping' && this.jumpTime === 0 ) {
+	this.item = { title: 'Jumping now', body: 'Ship jumping' }; 
+        this.jumpTime = (new Date()).getTime()
+        clearInterval(this.$options.interval)
+        this.$options.interval = setInterval(this.brokenFetch, 100)
+      } else if( d.getSeconds() % 5 === 0 ) {
         axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
-	  .then(function(response) {
-	  console.log("Got data, state: " + this.jumping + ", body: " + response.data.body);
-	    if( false ) {
-	      checkJumpEnd();
-	    } else if( response.data.body.startsWith('Jumping to coordinates') ) {
-	      crashScreen();
-	    } else {
-	      this.item = response.data;
-	    }
+	  .then(response => {
+            this.item = response.data
 	  }).catch(function (error) {
-	    console.log(error);
+	    console.log(error)
 	  });
       }
+    },
+
+    brokenFetch () {
+      const now = (new Date()).getTime()
+      if( now - this.jumpTime > 5000 ) {
+        clearInterval(this.$options.interval)
+        this.$options.interval = setInterval(this.fetch, 1000)
+	this.showBody = false
+	this.item = { title: '', body: '' }; 
+      } else {
+        document.body.style.transform = `translate3d(${Math.random()*100-50}px, ${Math.random()*100-50}px, 0)`
+      }
     }
+
   }
 }
 
-let crashScreen = function() {
-    this.jumping = true;
-    setInterval(() => document.body.style.transform = `translate3d(${Math.random()*100-50}px, ${Math.random()*100-50}px, 0)`, 100)
-}
-
-let blankScreen = function() {
-  $('#mainDisplay').css('visibility', 'hidden');
-}
-
-let checkJumpEnd = function() {
-  if( this.item.title.startsWith('Odysseus completed') ) {
-    $('#mainDisplay').css('visibility', 'visible');
-    this.jumping = false;
-  }
-}
 </script>
