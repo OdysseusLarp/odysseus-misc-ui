@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div class="main" id="mainDisplay">
     <div v-if="item.title">
       <div class="solar">{{solar}}</div>
       <div class="title">{{item.title}}</div>
@@ -97,7 +97,9 @@ export default {
         title: 'Loading', body: 'Wait until data is loaded'
       },
       solar: 'SOLAR',
-      time: (new Date()).toLocaleString()
+      time: (new Date()).toLocaleString(),
+      jumping: false,
+      jumpTime: 0
     }
   },
   created () {
@@ -113,16 +115,23 @@ export default {
     fetch () {
       const d = new Date();
       this.time = d.toLocaleString();
-      if( d.getMinutes() % 2 === 0 ) {
+      if( d.getHours() > 5 && d.getHours() < 13 ) {
         this.solar = "SOLAR";
       } else {
 	this.solar = "LUNAR";
       }
       if( d.getSeconds() % 5 === 0 ) {
-        console.log('Loading data')
         axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
-	  .then(response => { this.item = response.data })
-	  .catch(function (error) {
+	  .then(function(response) {
+	  console.log("Got data, state: " + this.jumping + ", body: " + response.data.body);
+	    if( false ) {
+	      checkJumpEnd();
+	    } else if( response.data.body.startsWith('Jumping to coordinates') ) {
+	      crashScreen();
+	    } else {
+	      this.item = response.data;
+	    }
+	  }).catch(function (error) {
 	    console.log(error);
 	  });
       }
@@ -131,9 +140,18 @@ export default {
 }
 
 let crashScreen = function() {
+    this.jumping = true;
     setInterval(() => document.body.style.transform = `translate3d(${Math.random()*100-50}px, ${Math.random()*100-50}px, 0)`, 100)
 }
 
-let uncrashScreen = function() {
+let blankScreen = function() {
+  $('#mainDisplay').css('visibility', 'hidden');
+}
+
+let checkJumpEnd = function() {
+  if( this.item.title.startsWith('Odysseus completed') ) {
+    $('#mainDisplay').css('visibility', 'visible');
+    this.jumping = false;
+  }
 }
 </script>
