@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div class="infoboard-container" ref="infoboardContainer">
+    <div v-if="showBody" class="infoboard-container" ref="infoboardContainer">
       <img :src="`img/infoboard/${solar === 'SOLAR' ? 'solar' : 'lunar'}.svg`">
       <div class="shift">{{ solar }}</div>
       <div class="title">{{ item.title.toUpperCase() }}</div>
@@ -8,6 +8,10 @@
       </div>
       <div class="jump-time">{{ (jump_text || '').toUpperCase() }}</div>
       <div class="ship-time">SHIP TIME {{ (time || '').toUpperCase() }}</div>
+    </div>
+    <div v-else>
+      <!-- Show TV-static screen during 'jumping' state -->
+      <odysseus-static></odysseus-static>
     </div>
   </div>
 </template>
