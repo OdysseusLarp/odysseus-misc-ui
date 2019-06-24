@@ -7,7 +7,7 @@
       <div class="body" v-html="item.body">
       </div>
       <div class="jump-time">{{ (jump_text || '').toUpperCase() }}</div>
-      <div class="ship-time">SHIP TIME {{ (time || '').toUpperCase() }}</div>
+      <div class="ship-time">SHIP TIME: {{ (time || '').toUpperCase() }}</div>
     </div>
     <div v-else>
       <!-- Show TV-static screen during 'jumping' state -->
@@ -61,6 +61,7 @@ $orbitron: 'Orbitron', sans-serif;
     top: var(--title-top);
     font-size: var(--title-font-size);
     line-height: normal;
+    text-shadow: 0.05rem 0.05rem 0.4rem rgba(0, 0, 0, 0.2);
     // border: 2px solid #0f0;
   }
 
@@ -93,6 +94,8 @@ $orbitron: 'Orbitron', sans-serif;
     left: var(--ship-time-left);
     font-size: var(--ship-time-font-size);
     line-height: normal;
+    font-weight: bold;
+    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
     // border: 2px solid #0f0;
   }
 
@@ -102,6 +105,8 @@ $orbitron: 'Orbitron', sans-serif;
     left: var(--ship-time-left);
     font-size: var(--ship-time-font-size);
     line-height: normal;
+    font-weight: bold;
+    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
     // border: 2px solid #00f;
   }
 }
@@ -121,12 +126,15 @@ export default {
       time: (new Date()).toLocaleString(),
       jump_text: '',
       jumpTime: 0,
-      showBody: true
+      showBody: true,
     }
   },
   computed: {
     jumpStatus() {
       return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'jump').status
+    },
+    safeJumpCountdown() {
+      return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'jumpstate').readyT
     },
     jumpCountdown() {
       return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'jumpstate').jumpT
@@ -149,30 +157,6 @@ export default {
     clearInterval(this.$options.interval)
   },
   methods: {
-    getJumpStatus(status) {
-      switch (status) {
-        case 'ready_to_prep':
-          return 'Ready for jump prep';
-        case 'preparation':
-          return 'Preparing for jump';
-        case 'ready':
-          return 'Ready to jump';
-        case 'prep_complete':
-          return 'Jump prep complete';
-        case 'jumping':
-          return 'Jumping';
-        case 'jump_initiated':
-          return 'Jump initiated';
-        case 'cooldown':
-          return 'Jump drive on cooldown';
-        case 'calculating':
-          return 'Calculating jump vectors';
-        case 'broken':
-          return 'Jump drive broken';
-        default:
-          return 'Jump drive state unknown';
-      }
-    },
     getIsSolar() {
       const d = new Date()
       return ((d.getHours() > 15 && d.getHours() < 20 ) || ( d.getHours() > 3 && d.getHours() < 12));
@@ -188,8 +172,8 @@ export default {
 
 
       const shiftFontSize = 3 * widthOffset;
-      const shiftRight = 27.5 * widthOffset;
-      const shiftTop = 6.2 * heightOffset;
+      const shiftRight = 28 * widthOffset;
+      const shiftTop = 6.6 * heightOffset;
 
       const titleFontSize = 8 * widthOffset;
       const titleTop = 19.5 * heightOffset;
@@ -232,7 +216,7 @@ export default {
         this.showBody = true;
 	this.jumpTime = 0;
       }
-      this.jump_text = this.getJumpStatus(status);
+      this.jump_text = `Next safe jump in ${this.safeJumpCountdown}`;
       if( status === 'jump_initiated' ) {
 	this.item = { title: 'Jump countdown initated', body: `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping in<p style="font-size: 7vw; font-family: Orbitron;">${this.jumpCountdown}</p></div>` };
       } else if( status === 'jumping' && this.jumpTime === 0 ) {
