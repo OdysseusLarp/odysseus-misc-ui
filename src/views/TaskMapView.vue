@@ -6,12 +6,13 @@
         <div v-if="indicator" class="indicator" :style="{left: x+'%', top: y+'%'}"></div>
       </div>
     </div>
+    <p class="title">{{item.location}}</p>
   </Box>
 </template>
 
 <style lang="scss" scoped>
 .container {
-  height: 100%;
+  height: 95%;
   text-align: center;
 }
 .img-container {
@@ -21,6 +22,13 @@
 }
 .img {
   height: 100%;
+}
+.title {
+  margin: 0 0 -1em;
+  padding: 0;
+  font-size: 80%;
+  text-align: center;
+  font-style: italic;
 }
 
 .indicator {
@@ -49,7 +57,32 @@ const KEY = "odysseus.selectedTask"
 const ANIM_TIMEOUT = 60
 const ANIM_LENGTH = 12
 const MAP_SIZE = 450
-const ANIMATIONS = Array(20).fill(0).map((e, index) => `map/map${twoDigit(index+1)}.png`)
+const ANIMATIONS = [
+  'map/lower-1.png',
+  'map/lower-2.png',
+  'map/lower-3.png',
+  'map/lower-4.png',
+  'map/lower-5.png',
+  'map/lower-6.png',
+  'map/lower-7.png',
+  'map/lower-8.png',
+  'map/lower-9.png',
+  'map/lower-10.png',
+  'map/lower-11.png',
+  'map/lower-12.png',
+  'map/lower-13.png',
+  'map/lower-14.png',
+  'map/upper-1.png',
+  'map/upper-2.png',
+  'map/upper-3.png',
+  'map/upper-4.png',
+  'map/upper-5.png',
+  'map/upper-6.png',
+  'map/upper-7.png',
+  'map/upper-8.png',
+  'map/upper-9.png',
+  'map/upper-10.png',
+]
 import Box from '../components/Box'
 
 function twoDigit(n) {
@@ -59,6 +92,7 @@ function twoDigit(n) {
 export default {
   data() {
     return {
+      entry: '{}',
       item: {
       },
       indicator: false,
@@ -74,12 +108,13 @@ export default {
   },
   methods: {
     update () {
-      const newItem = JSON.parse(localStorage.getItem(KEY) || '{}')
-      if (this.item.map === newItem.map && this.item.mapX === newItem.mapX && this.item.mapY === newItem.mapY) {
+      const entry = localStorage.getItem(KEY) || '{}'
+      if (this.entry === entry) {
         // Don't update unnecessarily
         return;
       }
-      this.item = JSON.parse(localStorage.getItem(KEY) || '{}')
+      this.entry = entry
+      this.item = JSON.parse(entry)
       if (this.item.map) {
         this.images = this.randomSet('map/' + this.item.map)
         if (this.item.mapX && this.item.mapY) {
