@@ -1,23 +1,15 @@
 <template>
-  <div>
-    <div v-if="showBody" class="main" ref="infoboardContainer">
-      <div v-if="item.title">
-        <div class="solar">{{solar}}</div>
-        <div class="title">{{item.title}}</div>
-        <div class="text" v-html="item.body"></div>
-        <div class="bottom">
-          <div class="jump">
-      <div v-if="jump_text">{{jump_text}}</div>
-    </div>
-          <div class="time">Ship Time: {{time}}</div>
-        </div>
+  <div class="app-container">
+    <div class="infoboard-container" ref="infoboardContainer">
+      <img src="img/infoboard/solar.svg">
+      <div class="shift">SOLAR</div>
+      <div class="title">TITLE GOES HERE</div>
+      <div class="body">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis ac est egestas, tristique nibh eu, fermentum est. Cras tristique venenatis nisi, sed feugiat ex sollicitudin ac. Pellentesque faucibus ante at viverra pharetra. Duis quis efficitur enim, non vehicula odio. Ut commodo pellentesque justo. Aliquam porttitor dolor id lacus viverra, id tincidunt nisi ullamcorper. Quisque a libero id purus accumsan bibendum. Integer scelerisque enim odio, nec facilisis eros lobortis molestie.
       </div>
+      <div class="jump-time">NEXT JUMP IN 12 H 12 MIN 55 SEC</div>
+      <div class="ship-time">SHIP TIME 01/12/1212 12:00:00</div>
     </div>
-    <div v-else>
-      <!-- Show TV-static screen during 'jumping' state -->
-      <odysseus-static></odysseus-static>
-    </div>
-    <div class="dark-bg"></div>
   </div>
 </template>
 
@@ -27,17 +19,84 @@
 $roboto: 'Roboto', sans-serif;   
 $orbitron: 'Orbitron', sans-serif;
 
-// Dark bg behind everything else, so that when the screen shakes, the edges are not white
-.dark-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: -999;
+.app-container {
   background: #1f1f1f;
+  font-family: $orbitron;
   width: 100%;
   height: 100%;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+
+// Dark bg behind everything else, so that when the screen shakes, the edges are not white
+.infoboard-container {
+  // padding: 1vh;
+  color: #fff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // background-image: url('../../public/img/infoboard/svg1.svg');
+  // background-repeat: no-repeat;
+  // background-size: contain;
+  // height: 100%;
+
+  img {
+    max-height: 100vh;
+    max-width: 100vw;
+  }
+
+  .shift {
+    position: absolute;
+    top: var(--shift-top);
+    right: var(--shift-right);
+    font-size: var(--shift-font-size);
+    font-family: $orbitron;
+    border: 2px solid #f00;
+    transform: translate(50%, 0);
+    line-height: normal;
+  }
+
+  .title {
+    position: absolute;
+    top: var(--title-top);
+    font-size: var(--title-font-size);
+    border: 2px solid #0f0;
+    line-height: normal;
+  }
+
+  .body {
+    position: absolute;
+    top: var(--body-top);
+    left: var(--body-leftRight);
+    right: var(--body-leftRight);
+    font-size: var(--body-font-size);
+    border: 2px solid #0ff;
+    font-family: $roboto;
+  }
+
+  .ship-time {
+    position: absolute;
+    bottom: var(--ship-time-bottom);
+    left: var(--ship-time-left);
+    font-size: var(--ship-time-font-size);
+    border: 2px solid #0f0;
+    line-height: normal;
+  }
+
+  .jump-time {
+    position: absolute;
+    bottom: var(--jump-time-bottom);
+    left: var(--ship-time-left);
+    font-size: var(--ship-time-font-size);
+    border: 2px solid #00f;
+    line-height: normal;
+  }
+}
+/*
 .main {
   position: fixed;
   background-image: url("../../public/img/infoboard.png");
@@ -102,6 +161,7 @@ $orbitron: 'Orbitron', sans-serif;
   height: 80px;
   margin-left: 100px;
 }
+*/
 </style>
 
 
@@ -134,6 +194,11 @@ export default {
     startDataBlobSync('ship', 'jump')
     startDataBlobSync('ship', 'jumpstate')
     this.$options.interval = setInterval(this.fetch, 1000)
+    window.onresize = () => this.resizeFonts();
+    setTimeout(() => this.resizeFonts(), 200);
+  },
+  beforeDestroy() {
+    window.onresize = undefined;
   },
   mounted () {
     fetch
@@ -142,6 +207,50 @@ export default {
     clearInterval(this.$options.interval)
   },
   methods: {
+    resizeFonts() {
+      const windowWidth = window.innerWidth;
+      const containerWidth = this.$refs.infoboardContainer.offsetWidth;
+      const widthOffset = containerWidth / windowWidth;
+
+      const windowHeight = window.innerHeight;
+      const containerHeight = this.$refs.infoboardContainer.offsetHeight;
+      const heightOffset = containerHeight / windowHeight;
+
+
+      const shiftFontSize = 3 * widthOffset;
+      const shiftRight = 27.5 * widthOffset;
+      const shiftTop = 6.2 * heightOffset;
+
+      const titleFontSize = 8 * widthOffset;
+      const titleTop = 19.5 * heightOffset;
+
+      const bodyTop = 30 * heightOffset;
+      const bodyLeftRight = 5 * heightOffset;
+      const bodyFontSize = 4 * widthOffset;
+
+      const shipTimeFontSize = 2.2 * widthOffset;
+      const shipTimeLeft = 6 * widthOffset;
+      const shipTimeBottom = 8.5 * heightOffset;
+
+      const jumpTimeBottom = 15.5 * heightOffset;
+
+      document.documentElement.style.setProperty('--shift-font-size', `${shiftFontSize}vw`);
+      document.documentElement.style.setProperty('--shift-right', `${shiftRight}vw`);
+      document.documentElement.style.setProperty('--shift-top', `${shiftTop}vh`);
+
+      document.documentElement.style.setProperty('--title-font-size', `${titleFontSize}vh`);
+      document.documentElement.style.setProperty('--title-top', `${titleTop}vh`);
+
+      document.documentElement.style.setProperty('--body-top', `${bodyTop}vh`);
+      document.documentElement.style.setProperty('--body-font-size', `${bodyFontSize}vh`);
+      document.documentElement.style.setProperty('--body-leftRight', `${bodyLeftRight}vw`);
+
+      document.documentElement.style.setProperty('--ship-time-font-size', `${shipTimeFontSize}vw`);
+      document.documentElement.style.setProperty('--ship-time-left', `${shipTimeLeft}vw`);
+      document.documentElement.style.setProperty('--ship-time-bottom', `${shipTimeBottom}vh`);
+
+      document.documentElement.style.setProperty('--jump-time-bottom', `${jumpTimeBottom}vh`);
+    },
     fetch () {
       const d = new Date()
       this.time = "Year 542, " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "" ) + d.getSeconds()
