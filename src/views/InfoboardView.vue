@@ -2,13 +2,12 @@
   <div class="app-container">
     <div class="infoboard-container" ref="infoboardContainer">
       <img src="img/infoboard/solar.svg">
-      <div class="shift">SOLAR</div>
-      <div class="title">TITLE GOES HERE</div>
-      <div class="body">
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis ac est egestas, tristique nibh eu, fermentum est. Cras tristique venenatis nisi, sed feugiat ex sollicitudin ac. Pellentesque faucibus ante at viverra pharetra. Duis quis efficitur enim, non vehicula odio. Ut commodo pellentesque justo. Aliquam porttitor dolor id lacus viverra, id tincidunt nisi ullamcorper. Quisque a libero id purus accumsan bibendum. Integer scelerisque enim odio, nec facilisis eros lobortis molestie.
+      <div class="shift">{{ solar }}</div>
+      <div class="title">{{ item.title.toUpperCase() }}</div>
+      <div class="body" v-html="item.body">
       </div>
-      <div class="jump-time">NEXT JUMP IN 12 H 12 MIN 55 SEC</div>
-      <div class="ship-time">SHIP TIME 01/12/1212 12:00:00</div>
+      <div class="jump-time">{{ jump_text || '' }}</div>
+      <div class="ship-time">SHIP TIME {{ time }}</div>
     </div>
   </div>
 </template>
@@ -30,7 +29,6 @@ $orbitron: 'Orbitron', sans-serif;
   justify-content: center;
 }
 
-// Dark bg behind everything else, so that when the screen shakes, the edges are not white
 .infoboard-container {
   // padding: 1vh;
   color: #fff;
@@ -38,11 +36,6 @@ $orbitron: 'Orbitron', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  // background-image: url('../../public/img/infoboard/svg1.svg');
-  // background-repeat: no-repeat;
-  // background-size: contain;
-  // height: 100%;
 
   img {
     max-height: 100vh;
@@ -259,6 +252,7 @@ export default {
       } else {
 	this.solar = "LUNAR"
       }
+      console.log('shift ===>', this.solar);
       const status = this.jumpStatus
       this.jump_text = '';
       if( status === 'broken' || status === 'cooldown' ) {
