@@ -32,6 +32,14 @@ html, body {
     src: url(assets/fonts/Orbitron-Black.otf) format('opentype');
 }
 
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Roboto'), local('Roboto-Regular'), url(assets/fonts/Roboto-Regular.ttf) format('ttf');
+  }
+
 .orbitron-light {
     font-family: Orbitron;
     font-weight: 100;

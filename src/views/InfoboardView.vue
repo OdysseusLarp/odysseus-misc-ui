@@ -17,7 +17,7 @@
 </template>
 
 <style lang="scss" scoped>
-@import url(https://fonts.googleapis.com/css?family=Roboto|Orbitron:400italic,700italic,400,700);
+// @import url(https://fonts.googleapis.com/css?family=Roboto|Orbitron:400italic,700italic,400,700);
 
 $roboto: 'Roboto', sans-serif;
 $orbitron: 'Orbitron', sans-serif;
