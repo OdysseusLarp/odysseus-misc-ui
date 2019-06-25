@@ -15,11 +15,11 @@
       </div>
 
       <div class="section">
-        <div v-if="buttonAction === 'pressurize'" class="action" :class="{ green: canPressurize }" v-on:click="pressurize">
-          << Pressurize >>
-        </div>
-        <div v-else-if="buttonAction === 'open'" class="action" :class="{ green: canOpen, red: !canOpen }"  v-on:click="openDoor">
+        <div v-if="buttonAction === 'open'" class="action" :class="{ green: canOpen, red: !canOpen }"  v-on:click="openDoor">
           << Open door >>
+        </div>
+        <div v-else-if="buttonAction === 'pressurize'" class="action" :class="{ green: canPressurize }" v-on:click="pressurize">
+          << Pressurize >>
         </div>
         <div v-else-if="buttonAction === 'depressurize'" class="action" :class="{ green: canDepressurize }" v-on:click="depressurize">
           >> Depressurize <<
@@ -36,8 +36,8 @@
       </div>
 
       <div class="section">
-        <div class="header" :class="mainUIColor">Countdown</div>
-        <div class="content" :class="mainUIColor">
+        <div class="header" :class="mainUIColor">{{countdownTitle}}</div>
+        <div class="content" :class="countdownColor">
           <timer :target="countdown"></timer>
         </div>
       </div>
@@ -151,6 +151,9 @@ export default {
     Counter,
     Timer,
   },
+  props: {
+    location: String
+  },
   computed: {
     box () {
       return this.$store.state.dataBlobs.find(e => e.type === 'box' && e.id === this.$store.state.boxId) || DEFAULT_BOX
@@ -160,9 +163,6 @@ export default {
     },
     pressure () {
       return sigmoid(this.box.pressure || 0)
-    },
-    location () {
-      return 'airlock'  // FIXME: how to customize this???
     },
     mainUIColor () {
       if (this.box.status === 'open') return 'green'
@@ -178,6 +178,10 @@ export default {
       if (this.pressure >= 1) return 'green'
       return 'red'
     },
+    countdownColor () {
+      // if (this.mainUIColor === 'green' && this.box.countdown_to == 0) return 'gray'
+      return this.mainUIColor
+    },
     canPressurize () {
       return this.box.status === 'vacuum' && this.location !== 'outside'
     },
@@ -185,12 +189,15 @@ export default {
       return this.box.status === 'open' && this.location !== 'inside'
     },
     canOpen () {
-      return this.box.status !== 'open' && this.pressure >= 1 && !this.box.malfunction
+      if (this.pressure < 1 || this.box.malfunction) return false
+      if (this.box.status === 'closed' || this.box.status === 'malfunction') return true
+      if (this.box.status === 'open' && this.location === 'inside') return true
+      return false
     },
     canCancel () {
-      if (this.box.status === 'pressurizing') return true;
-      if (this.box.status === 'depressurizing') return true;
-      return false;
+      if (this.box.status === 'pressurizing') return true
+      if (this.box.status === 'depressurizing') return true
+      return false
     },
     buttonAction () {
       if (this.box.status === 'pressurizing') return 'cancel'
@@ -212,6 +219,13 @@ export default {
       let msg = this.box.transition_status && messages[this.box.transition_status]
       if (!msg) msg = messages[this.box.status]
       if (!msg) msg = messages.default || 'Nominal'
+      return msg
+    },
+    countdownTitle () {
+      const messages = this.box.config.countdown_titles || {};
+      let msg = this.box.transition_status && messages[this.box.transition_status]
+      if (!msg) msg = messages[this.box.status]
+      if (!msg) msg = messages.default || 'Timer'
       return msg
     }
   },

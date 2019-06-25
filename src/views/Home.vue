@@ -6,11 +6,12 @@
     <b-form-input v-model="boxId" type="text" placeholder="Box ID"></b-form-input>
 
     <h2 class="mt-4">Choose app:</h2>
-    <b-button variant="outline-primary" to="/airlock" class="mt-4">Airlock controls</b-button>
     <b-button variant="outline-primary" to="/tasks" class="mt-4">Engineer tasks list</b-button>
     <b-button variant="outline-primary" to="/taskDetails" class="mt-4">Task details</b-button>
     <b-button variant="outline-primary" to="/taskMap" class="mt-4">Task map</b-button>
     <b-button variant="outline-primary" to="/infoboard" class="mt-4">Infoboard</b-button>
+    <b-button variant="outline-primary" to="/airlock" class="mt-4">Airlock control (in airlock)</b-button>
+    <b-button variant="outline-primary" to="/airlock?location=inside" class="mt-4">Airlock control (inside ship)</b-button>
   </b-container>
 </template>
 
