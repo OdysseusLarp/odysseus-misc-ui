@@ -1,16 +1,16 @@
 <template>
-  <div class="airlock-ui" :class="mainUIColor">
-    <div class="edge left"></div>
+  <div class="airlock-ui">
+    <div class="edge left" :class="mainUIColor"></div>
     <div class="sections">
 
       <div class="section">
         <div class="splitpane">
-          <div class="header">Inner door</div>
-          <div class="header">Pressure</div>
+          <div class="header" :class="doorColor">Inner door</div>
+          <div class="header" :class="pressureColor">Pressure</div>
         </div>
         <div class="splitpane">
-          <div class="content">{{doorState}}</div>
-          <div class="content"><counter :value="Math.round(this.pressure * 100, 2) + '%'"></counter></div>
+          <div class="content" :class="doorColor">{{doorState}}</div>
+          <div class="content" :class="pressureColor"><counter :value="Math.round(this.pressure * 100, 2) + '%'"></counter></div>
         </div>
       </div>
 
@@ -24,26 +24,26 @@
         <div v-else-if="buttonAction === 'depressurize'" class="action" :class="{ green: canDepressurize }" v-on:click="depressurize">
           >> Depressurize <<
         </div>
-        <div v-else-if="buttonAction === 'cancel'" class="action" :class="{ green: canCancel }" v-on:click="cancel">
+        <div v-else-if="buttonAction === 'cancel'" class="action" :class="{ darkgreen: canCancel }" v-on:click="cancel">
           !! Cancel !!
         </div>
         <div v-else class="action">Out of order</div>
       </div>
 
       <div class="section">
-        <div class="header">Condition</div>
-        <div class="content">{{statusMessage}}</div>
+        <div class="header" :class="mainUIColor">Condition</div>
+        <div class="content" :class="mainUIColor">{{statusMessage}}</div>
       </div>
 
       <div class="section">
-        <div class="header">Countdown</div>
-        <div class="content">
+        <div class="header" :class="mainUIColor">Countdown</div>
+        <div class="content" :class="mainUIColor">
           <timer :target="countdown"></timer>
         </div>
       </div>
 
     </div>
-    <div class="edge right"></div>
+    <div class="edge right" :class="mainUIColor"></div>
   </div>
 </template>
 
@@ -84,6 +84,11 @@ $bg-blackish: #231f20;  /* gaps and sidebars */
 .sections { flex-grow: 1; }
 .section { margin-top: 15px; }
 
+.header, .content, .action {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 .action {
   margin-left: -40px;
   margin-right: -40px;
@@ -119,11 +124,13 @@ $bg-blackish: #231f20;  /* gaps and sidebars */
   flex-basis: 50%;
 }
 
-.green .content, .green .edge, .action.green { background-color: $bg-green; }
-.green .header{ background-color: $bg-darkgreen; border-color: $bg-green; }
+.content.green, .edge.green, .action.green { background-color: $bg-green; }
+.header.green  { background-color: $bg-darkgreen; border-color: $bg-green; }
 
-.red .content, .red .edge, .action.red { background-color: $bg-red; }
-.red .header { background-color: $bg-darkred; border-color: $bg-red; }
+.content.red, .edge.red, .action.red { background-color: $bg-red; }
+.header.red  { background-color: $bg-darkred; border-color: $bg-red; }
+
+.content.darkgreen, .header.darkgreen, .action.darkgreen { background-color: $bg-darkgreen; }
 </style>
 
 <script>
@@ -133,6 +140,11 @@ import { startDataBlobSync } from '../storeSync';
 import axios from 'axios';
 
 const DEFAULT_BOX = {}
+
+// apply a non-linear function to the pressure
+function sigmoid (x) {
+  return 3 * x**2 - 2 * x**3
+}
 
 export default {
   components: {
@@ -147,13 +159,24 @@ export default {
       return new Date(this.box.countdown_to)
     },
     pressure () {
-      return this.box.pressure || 0
+      return sigmoid(this.box.pressure || 0)
     },
     location () {
       return 'airlock'  // FIXME: how to customize this???
     },
     mainUIColor () {
-      return this.box.status === 'open' ? 'green' : 'red'
+      if (this.box.status === 'open') return 'green'
+      if (this.box.status === 'vacuum') return 'green'
+      return 'red'
+    },
+    doorColor () {
+      if (this.box.status === 'open') return 'green'
+      if (this.box.transition_status === 'depressurize_start') return 'darkgreen'
+      return 'red'
+    },
+    pressureColor () {
+      if (this.pressure >= 1) return 'green'
+      return 'red'
     },
     canPressurize () {
       return this.box.status === 'vacuum' && this.location !== 'outside'
@@ -165,8 +188,8 @@ export default {
       return this.box.status !== 'open' && this.pressure >= 1 && !this.box.malfunction
     },
     canCancel () {
-      if (this.box.status === 'pressurizing' && this.pressure <= 0) return true;
-      if (this.box.status === 'depressurizing' && this.pressure >= 1) return true;
+      if (this.box.status === 'pressurizing') return true;
+      if (this.box.status === 'depressurizing') return true;
       return false;
     },
     buttonAction () {
@@ -180,15 +203,15 @@ export default {
     statusMessage () {
       const messages = this.box.config.status_messages || {};
       let msg = this.box.transition_status && messages[this.box.transition_status]
-      if (!msg) msg = messages[this.box.status || 'default']
-      if (!msg) msg = 'Error'
+      if (!msg) msg = messages[this.box.status]
+      if (!msg) msg = messages.default || 'Nominal'
       return msg
     },
     doorState () {
       const messages = this.box.config.door_states || {};
       let msg = this.box.transition_status && messages[this.box.transition_status]
-      if (!msg) msg = messages[this.box.status || 'default']
-      if (!msg) msg = 'Error'
+      if (!msg) msg = messages[this.box.status]
+      if (!msg) msg = messages.default || 'Nominal'
       return msg
     }
   },
@@ -204,13 +227,13 @@ export default {
     },
     cancel () {
       if (!this.canCancel) return;
-      else if (this.pressure <= 0) this.setStatus('vacuum')
-      else if (this.pressure >= 1) this.setStatus('pressurizing')
+      else if (this.box.status === 'pressurizing') this.setStatus('depressurizing')
+      else if (this.box.status === 'depressurizing') this.setStatus('pressurizing')
       else this.setStatus('error')  // can't happen?
     },
     setStatus (status) {
       console.log(`Setting status to ${status}...`)
-      axios.patch(`/data/box/${this.$store.state.boxId}`, {status: status, version: this.box.version})
+      axios.patch(`/data/box/${this.$store.state.boxId}?force=true`, {status: status, version: this.box.version})
         .then(() => console.log(`Status set to ${status}`))
         .catch((err) => console.log(`Failed to set status to ${status}:`, err))
     }
