@@ -1,24 +1,14 @@
 <template>
-  <span class="timer">
-    <span v-for="char in timeStr.split('')" :class="[/\d/.test(char) ? 'digit' : 'sep' ]">{{char}}</span>
-  </span>
+  <counter :value="timeStr"></counter>
 </template>
 
-<style lang="scss" scoped>
-.digit, .sep {
-  display: inline-block;
-  text-align: center;
-}
-.digit {
-  width: 0.85em;
-}
-.sep {
-  width: 0.4em;
-}
-</style>
-
 <script>
+import Counter from '@/components/Counter.vue';
+
 export default {
+  components: {
+    Counter,
+  },
   props: {
     target: Date
   },
