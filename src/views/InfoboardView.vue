@@ -18,7 +18,13 @@
 
 <style lang="scss" scoped>
 // @import url(https://fonts.googleapis.com/css?family=Roboto|Orbitron:400italic,700italic,400,700);
-
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Roboto'), local('Roboto-Regular'), url(../assets/fonts/Roboto-Regular.ttf) format('ttf');
+}
 $roboto: 'Roboto', sans-serif;
 $orbitron: 'Orbitron', sans-serif;
 
