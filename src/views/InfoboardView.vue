@@ -6,8 +6,8 @@
       <div class="title">{{ item.title.toUpperCase() }}</div>
       <div class="body" v-html="item.body">
       </div>
-      <div class="jump-time">{{ (jump_text || '').toUpperCase() }}</div>
-      <div class="ship-time">SHIP TIME: {{ (time || '').toUpperCase() }}</div>
+      <div class="jump-time"><counter :value="(jump_text || '').toUpperCase()" /></div>
+      <div class="ship-time">SHIP TIME: <counter :value="(time || '').toUpperCase()" /></div>
     </div>
     <div v-else>
       <!-- Show TV-static screen during 'jumping' state -->
@@ -119,10 +119,12 @@ $orbitron: 'Orbitron', sans-serif;
 </style>
 
 <script>
+import Counter from '@/components/Counter.vue';
 import { startDataBlobSync } from '../storeSync'
 import axios from 'axios'
 
 export default {
+  components: { Counter },
   data() {
     return {
       item: {
@@ -224,7 +226,7 @@ export default {
       }
       this.jump_text = `Next safe jump in ${this.safeJumpCountdown}`;
       if( status === 'jump_initiated' ) {
-	this.item = { title: 'Jump countdown initated', body: `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping in<p style="font-size: 7vw; font-family: Orbitron;">${this.jumpCountdown}</p></div>` };
+	this.item = { title: 'Jump countdown initated', body: `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping in<p style="font-size: 7vw; font-family: Orbitron;">${this.makeCounterHtml(this.jumpCountdown)}</p></div>` };
       } else if( status === 'jumping' && this.jumpTime === 0 ) {
 	this.item = { title: 'Jumping now', body: '<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping</div>' };
         this.jumpTime = (new Date()).getTime()
@@ -238,6 +240,10 @@ export default {
 	    console.log(error)
 	  });
       }
+    },
+    makeCounterHtml (text) {  // <counter> replacement for raw HTML; assumes no HTML-escaping is needed!
+      const html = text.replace(/(\d)/g, '<span class="digit">$1</span>')
+      return `<span class="counter">${html}</span>`
     },
 
     brokenFetch () {

@@ -56,3 +56,9 @@ html, body {
     font-family: Orbitron;
     font-weight: 900;
 }
+
+.counter > .digit {
+  display: inline-block;
+  text-align: center;
+  width: 0.85em;
+}
