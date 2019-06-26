@@ -182,10 +182,10 @@ export default {
 
       const shiftFontSize = 3 * widthOffset;
       const shiftRight = 28 * widthOffset;
-      const shiftTop = 6.6 * heightOffset;
+      const shiftTop = 5 * heightOffset;
 
       const titleFontSize = 8 * widthOffset;
-      const titleTop = 18.25 * heightOffset;
+      const titleTop = 18 * heightOffset;
 
       const bodyTop = 30 * heightOffset;
       const bodyLeftRight = 5 * heightOffset;
