@@ -37,6 +37,7 @@ $orbitron: 'Orbitron', sans-serif;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  cursor: none;
 }
 
 .infoboard-container {
@@ -184,7 +185,7 @@ export default {
       const shiftTop = 6.6 * heightOffset;
 
       const titleFontSize = 8 * widthOffset;
-      const titleTop = 19.5 * heightOffset;
+      const titleTop = 18.25 * heightOffset;
 
       const bodyTop = 30 * heightOffset;
       const bodyLeftRight = 5 * heightOffset;
@@ -247,16 +248,11 @@ export default {
     },
 
     brokenFetch () {
-      const now = (new Date()).getTime()
-      if( now - this.jumpTime > 5000 ) {
         clearInterval(this.$options.interval)
         this.$options.interval = setInterval(this.fetch, 1000)
         this.showBody = false
         this.item = { title: '', body: '' };
         this.$refs.infoboardContainer.style.transform = 'none';
-      } else {
-        this.$refs.infoboardContainer.style.transform = `translate3d(${Math.random()*100-50}px, ${Math.random()*100-50}px, 0)`
-      }
     }
 
   }
