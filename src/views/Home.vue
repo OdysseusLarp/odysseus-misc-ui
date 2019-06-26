@@ -10,8 +10,7 @@
     <b-button variant="outline-primary" to="/taskDetails" class="mt-4">Task details</b-button>
     <b-button variant="outline-primary" to="/taskMap" class="mt-4">Task map</b-button>
     <b-button variant="outline-primary" to="/infoboard" class="mt-4">Infoboard</b-button>
-    <b-button variant="outline-primary" to="/airlock" class="mt-4">Airlock control (in airlock)</b-button>
-    <b-button variant="outline-primary" to="/airlock?location=inside" class="mt-4">Airlock control (inside ship)</b-button>
+    <b-button variant="outline-primary" to="/airlock" class="mt-4">Airlock control</b-button>
   </b-container>
 </template>
 

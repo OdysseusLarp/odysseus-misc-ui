@@ -3,6 +3,10 @@
     <div class="edge left" :class="mainUIColor"></div>
     <div class="sections">
 
+      <div class="section" v-if="this.box.config.title_bar_text">
+        <div class="content" :class="mainUIColor">{{this.box.config.title_bar_text}}</div>
+      </div>
+
       <div class="section">
         <div class="splitpane">
           <div class="header" :class="doorColor">Inner door</div>
@@ -17,19 +21,12 @@
       </div>
 
       <div class="section">
-        <div v-if="buttonAction === 'open'" class="action" :class="{ green: canOpen, red: !canOpen }"  v-on:click="openDoor">
-          << Open door >>
+        <div v-if="buttonAction === 'close'" class="action" :class="closeButtonColor"  v-on:click="closeDoor">
+          {{localize('button_close')}}
         </div>
-        <div v-else-if="buttonAction === 'pressurize'" class="action" :class="{ green: canPressurize }" v-on:click="pressurize">
-          << Pressurize >>
+        <div v-else class="action" :class="openButtonColor"  v-on:click="openDoor">
+          {{localize('button_open')}}
         </div>
-        <div v-else-if="buttonAction === 'depressurize'" class="action" :class="{ green: canDepressurize }" v-on:click="depressurize">
-          >> Depressurize <<
-        </div>
-        <div v-else-if="buttonAction === 'cancel'" class="action" :class="{ darkgreen: canCancel }" v-on:click="cancel">
-          !! Cancel !!
-        </div>
-        <div v-else class="action">Out of order</div>
       </div>
 
       <div class="section">
@@ -39,7 +36,7 @@
 
       <div class="section">
         <div class="header" :class="mainUIColor">{{countdownTitle}}</div>
-        <div class="content" :class="countdownColor"><timer :target="countdown" /></div>
+        <div class="content" :class="mainUIColor"><timer :target="countdown" /></div>
       </div>
 
     </div>
@@ -140,14 +137,37 @@ import { startDataBlobSync } from '../storeSync';
 import axios from 'axios';
 
 const DEFAULT_BOX = {}
+const DEFAULT_MESSAGES = {
+  // main status box messages
+  status_open: 'Door open',
+  status_opening: 'Door opening',
+  status_closing: 'Door closing',
+  status_malfunction: 'Door malfunction',
+  status_closed: 'Door closed',
+  status_pressurizing: 'Pressurizing',
+  status_depressurizing: 'Depressurizing',
+  status_vacuum: 'Vacuum',
+  // door status messages
+  door_open: 'Open',
+  door_opening: 'Opening',
+  door_closing: 'Closing',
+  door_closed: 'Closed',
+  door_malfunction: 'Error',
+  // button actions
+  button_open: '<< Open door >>',
+  button_close: '>> Close door <<',
+  // countdown titles
+  countdown_opening: 'Door opening in',
+  countdown_closing: 'Door closing in',
+  countdown_pressurizing: 'Time to full pressure',
+  countdown_depressurizing: 'Time to vacuum',
+  countdown_default: 'Countdown',
+}
 
 export default {
   components: {
     AirlockPressure,
     Timer,
-  },
-  props: {
-    location: String
   },
   data () {
     return {
@@ -163,91 +183,64 @@ export default {
       return new Date(this.box.countdown_to)
     },
     mainUIColor () {
-      if (this.box.status === 'open') return 'green'
-      if (this.box.status === 'vacuum') return 'green'
+      if (this.box.status === 'open' || this.box.status === 'opening') return 'green'
+      if (this.box.status === 'closed' || this.box.status === 'closing') return 'green'
       return 'red'
     },
     doorColor () {
       if (this.box.status === 'open') return 'green'
-      if (this.box.transition_status === 'depressurize_start') return 'darkgreen'
+      if (this.box.status === 'closing') return 'darkgreen'
       return 'red'
     },
     pressureColor () {
       if (this.scaledPressure >= (this.box.safe_pressure_threshold || 0.99)) return 'green'
       return 'red'
     },
-    countdownColor () {
-      // if (this.mainUIColor === 'green' && this.box.countdown_to == 0) return 'gray'
-      return this.mainUIColor
+    openButtonColor () {
+      if (this.box.status === 'opening' || this.box.status === 'open' || this.box.status === 'closing') return 'darkgreen'
+      return this.canOpen ? 'green' : 'red'
     },
-    canPressurize () {
-      return this.box.status === 'vacuum' && this.location !== 'outside'
-    },
-    canDepressurize () {
-      return this.box.status === 'open' && this.location !== 'inside'
+    closeButtonColor () {
+      if (this.box.status === 'closing' || this.box.status === 'closed') return 'darkgreen'
+      return this.canClose ? 'green' : 'red'
     },
     canOpen () {
-      if (this.pressure < 1 || this.box.malfunction) return false
-      if (this.box.status === 'closed' || this.box.status === 'malfunction') return true
-      if (this.box.status === 'open' && this.location === 'inside') return true
-      return false
+      return this.pressure >= 1 && this.box.status === 'closed'
     },
-    canCancel () {
-      if (this.box.status === 'pressurizing') return true
-      if (this.box.status === 'depressurizing') return true
-      return false
+    canClose () {
+      return this.box.status === 'open'
     },
     buttonAction () {
-      if (this.box.status === 'pressurizing') return 'cancel'
-      if (this.box.status === 'depressurizing') return 'cancel'
-      if (this.pressure >= 1 && this.box.status !== 'open') return 'open'
-      if (this.location === 'inside' || this.pressure <= 0) return 'pressurize'
-      if (this.location === 'outside' || this.pressure >= 1) return 'depressurize'
-      return 'error'
+      if (this.box.config.auto_close_delay > 0) return 'open'  // closes automatically
+      if (this.box.status === 'open' || this.box.status === 'closing') return 'close'
+      return 'open'
     },
     statusMessage () {
-      const messages = this.box.config.status_messages || {};
-      let msg = this.box.transition_status && messages[this.box.transition_status]
-      if (!msg) msg = messages[this.box.status]
-      if (!msg) msg = messages.default || 'Nominal'
-      return msg
+      return this.localize('status_' + this.box.status) || this.box.status
     },
     doorState () {
-      const messages = this.box.config.door_states || {};
-      let msg = this.box.transition_status && messages[this.box.transition_status]
-      if (!msg) msg = messages[this.box.status]
-      if (!msg) msg = messages.default || 'Nominal'
-      return msg
+      return this.localize('door_' + this.box.status) || this.localize('door_closed')
     },
     countdownTitle () {
-      const messages = this.box.config.countdown_titles || {};
-      let msg = this.box.transition_status && messages[this.box.transition_status]
-      if (!msg) msg = messages[this.box.status]
-      if (!msg) msg = messages.default || 'Timer'
-      return msg
+      if (this.box.status === 'open' && this.box.countdown_to > 0) return this.localize('countdown_closing')
+      return this.localize('countdown_' + this.box.status) || this.localize('countdown_default')
     }
   },
   methods: {
-    pressurize () {
-      if (this.canPressurize) this.setStatus('pressurizing')  // backend does the rest
-    },
-    depressurize () {
-      if (this.canDepressurize) this.setStatus('depressurizing')  // backend does the rest
-    },
     openDoor () {
-      if (this.canOpen) this.setStatus('pressurizing')  // backend does the rest (yes, we use the same status)
+      if (this.canOpen) this.sendCommand('open')  // backend does the rest
     },
-    cancel () {
-      if (!this.canCancel) return;
-      else if (this.box.status === 'pressurizing') this.setStatus('depressurizing')
-      else if (this.box.status === 'depressurizing') this.setStatus('pressurizing')
-      else this.setStatus('error')  // can't happen?
+    closeDoor () {
+      if (this.canClose) this.sendCommand('close')  // backend does the rest
     },
-    setStatus (status) {
-      console.log(`Setting status to ${status}...`)
-      axios.patch(`/data/box/${this.$store.state.boxId}?force=true`, {status: status, version: this.box.version})
-        .then(() => console.log(`Status set to ${status}`))
-        .catch((err) => console.log(`Failed to set status to ${status}:`, err))
+    localize (message) {
+      return this.box.config.messages[message] || DEFAULT_MESSAGES[message]
+    },
+    sendCommand (command) {
+      console.log(`Send command ${command} to ${this.$store.state.boxId}...`)
+			axios.patch(`/data/box/${this.$store.state.boxId}?force=true`, {command: command})
+				.then(() => console.log(`Command ${command} sent to ${this.$store.state.boxId}`))
+				.catch((err) => console.log(`Command ${command} to ${this.$store.state.boxId} failed:`, err))
     },
     onPressureChange (values) {
       this.pressure = values.unscaled

@@ -20,7 +20,6 @@ export default new Router({
       path: '/airlock',
       name: 'airlock',
       component: AirlockView,
-      props: (route) => ({ location: route.query.location || 'airlock' })
     },
     {
       path: '/tasks',
