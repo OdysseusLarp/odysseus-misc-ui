@@ -147,11 +147,15 @@ export default {
     },
     jumpCountdown() {
       return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'jumpstate').jumpT
-    }
+    },
+    isInfoboardEnabled() {
+      return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'metadata').infoboard_enabled
+    },
   },
   created () {
     startDataBlobSync('ship', 'jump')
     startDataBlobSync('ship', 'jumpstate')
+    startDataBlobSync('ship', 'metadata')
     this.$options.interval = setInterval(this.fetch, 1000)
     window.onresize = () => this.resizeFonts();
     setTimeout(() => this.resizeFonts(), 200);
@@ -217,6 +221,7 @@ export default {
       document.documentElement.style.setProperty('--jump-time-bottom', `${jumpTimeBottom}vh`);
     },
     fetch () {
+      if (!this.isInfoboardEnabled) return this.showBody = false;
       const d = new Date()
       this.time = "Year 542, " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "" ) + d.getSeconds()
       this.solar = this.getIsSolar() ? 'SOLAR' : 'LUNAR';
@@ -252,7 +257,6 @@ export default {
         this.$options.interval = setInterval(this.fetch, 1000)
         this.showBody = false
         this.item = { title: '', body: '' };
-        this.$refs.infoboardContainer.style.transform = 'none';
     }
 
   }
