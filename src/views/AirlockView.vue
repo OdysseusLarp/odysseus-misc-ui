@@ -10,7 +10,9 @@
         </div>
         <div class="splitpane">
           <div class="content" :class="doorColor">{{doorState}}</div>
-          <div class="content" :class="pressureColor"><counter :value="pressurePercent"></counter></div>
+          <div class="content" :class="pressureColor">
+            <airlockPressure :rawPressure="box.pressure" :curve="box.config.pressure_curve" v-on:pressureChange="onPressureChange" />
+          </div>
         </div>
       </div>
 
@@ -37,9 +39,7 @@
 
       <div class="section">
         <div class="header" :class="mainUIColor">{{countdownTitle}}</div>
-        <div class="content" :class="countdownColor">
-          <timer :target="countdown"></timer>
-        </div>
+        <div class="content" :class="countdownColor"><timer :target="countdown" /></div>
       </div>
 
     </div>
@@ -134,29 +134,26 @@ $bg-blackish: #231f20;  /* gaps and sidebars */
 </style>
 
 <script>
-import Counter from '@/components/Counter.vue';
+import AirlockPressure from '@/components/AirlockPressure.vue';
 import Timer from '@/components/Timer.vue';
 import { startDataBlobSync } from '../storeSync';
 import axios from 'axios';
 
 const DEFAULT_BOX = {}
 
-// apply a non-linear function to the pressure
-function sigmoid (x) {
-  return 3 * x**2 - 2 * x**3
-}
-
 export default {
   components: {
-    Counter,
+    AirlockPressure,
     Timer,
   },
   props: {
     location: String
   },
-  data: () => 1 && {
-    pressure: 0,  // updated via timer
-    pressureUpdateTimer: undefined,
+  data () {
+    return {
+      pressure: 0,
+      scaledPressure: 0
+    }
   },
   computed: {
     box () {
@@ -164,14 +161,6 @@ export default {
     },
     countdown () {
       return new Date(this.box.countdown_to)
-    },
-    pressureRamp () {
-      const pressure = this.box.pressure
-      if (typeof pressure === 'number') return { t0: 0, p0: pressure, t1: 0, p1: pressure }
-      else return pressure  // assume it's already in the format above!
-    },
-    pressurePercent () {
-      return Math.round(sigmoid(this.pressure) * 100, 2) + '%'
     },
     mainUIColor () {
       if (this.box.status === 'open') return 'green'
@@ -184,7 +173,7 @@ export default {
       return 'red'
     },
     pressureColor () {
-      if (this.pressure >= 1) return 'green'
+      if (this.scaledPressure >= (this.box.safe_pressure_threshold || 0.99)) return 'green'
       return 'red'
     },
     countdownColor () {
@@ -260,26 +249,9 @@ export default {
         .then(() => console.log(`Status set to ${status}`))
         .catch((err) => console.log(`Failed to set status to ${status}:`, err))
     },
-    updatePressure () {
-      const ramp = this.pressureRamp
-      const now = new Date().getTime()
-      if (now < ramp.t0) {
-        this.pressure = ramp.p0
-        this.pressureUpdateTimer = setTimeout(() => this.updatePressure(), Math.max(ramp.t0 - now, 100))
-      } else if (now >= ramp.t1) {
-        this.pressure = ramp.p1
-        this.pressureUpdateTimer = undefined  // no more updates needed
-      } else {
-        const x = (now - ramp.t0) / (ramp.t1 - ramp.t0)
-        this.pressure = ramp.p0 + x * (ramp.p1 - ramp.p0)
-        this.pressureUpdateTimer = setTimeout(() => this.updatePressure(), 100 + 300 * Math.random())
-      }
-    },
-  },
-  watch: {
-    pressureRamp () {
-      if (this.pressureUpdateTimer) clearInterval(this.pressureUpdateTimer)
-      this.updatePressure()
+    onPressureChange (values) {
+      this.pressure = values.unscaled
+      this.scaledPressure = values.scaled
     },
   },
   created () {
