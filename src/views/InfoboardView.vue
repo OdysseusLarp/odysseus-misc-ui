@@ -241,7 +241,13 @@ export default {
       } else if( d.getSeconds() % 5 === 0 ) {
         axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
 	  .then(response => {
-            this.item = response.data
+            const data = response.data;
+            if (data.title && data.body) {
+              const title = data.title.length > 23 ? data.title.substring(0, 23) + '...' : data.title;
+              const item = { title, body: data.body };
+              this.item = item;
+            }
+            // this.item = response.data
 	  }).catch(function (error) {
 	    console.log(error)
 	  });
