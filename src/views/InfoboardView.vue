@@ -3,7 +3,7 @@
     <div v-if="showBody" class="infoboard-container" ref="infoboardContainer">
       <img :src="`img/infoboard/${solar === 'SOLAR' ? 'solar' : 'lunar'}.svg`">
       <div class="shift">{{ solar }}</div>
-      <div class="title">{{ item.title.toUpperCase() }}</div>
+      <div class="title" ref="title"><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div></div>
       <div class="body" v-html="item.body">
       </div>
       <div class="jump-time"><counter :value="(jump_text || '').toUpperCase()" /></div>
@@ -66,10 +66,25 @@ $orbitron: 'Orbitron', sans-serif;
   .title {
     position: absolute;
     top: var(--title-top);
+    left: var(--title-leftRight);
+    right: var(--title-leftRight);
     font-size: var(--title-font-size);
     line-height: normal;
     text-shadow: 0.05rem 0.05rem 0.4rem rgba(0, 0, 0, 0.2);
     // border: 2px solid #0f0;
+    overflow: hidden;
+  }
+  .titleInner {
+    min-width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    animation: titlescroll 10s linear;
+  }
+  @keyframes titlescroll {
+    0% { margin-left: 0; }
+    10% { margin-left: 0; }
+    90% { margin-left: var(--title-scroll-amount); }
+    100% { margin-left: var(--title-scroll-amount); }
   }
 
   .body {
@@ -183,13 +198,13 @@ export default {
       const containerHeight = this.$refs.infoboardContainer.offsetHeight;
       const heightOffset = containerHeight / windowHeight;
 
-
       const shiftFontSize = 3 * widthOffset;
       const shiftRight = 28 * widthOffset;
       const shiftTop = 5 * heightOffset;
 
       const titleFontSize = 8 * widthOffset;
       const titleTop = 18 * heightOffset;
+      const titleLeftRight = 8 * heightOffset;
 
       const bodyTop = 30 * heightOffset;
       const bodyLeftRight = 5 * heightOffset;
@@ -208,6 +223,7 @@ export default {
 
       document.documentElement.style.setProperty('--title-font-size', `${titleFontSize}vh`);
       document.documentElement.style.setProperty('--title-top', `${titleTop}vh`);
+      document.documentElement.style.setProperty('--title-leftRight', `${titleLeftRight}vw`);
 
       document.documentElement.style.setProperty('--body-top', `${bodyTop}vh`);
       document.documentElement.style.setProperty('--body-max-height', `${bodyMaxHeight}vh`);
@@ -220,6 +236,17 @@ export default {
 
       document.documentElement.style.setProperty('--jump-time-bottom', `${jumpTimeBottom}vh`);
     },
+    stopTitleScroll () {
+      this.$refs.titleInner.style.visibility = 'hidden'
+      this.$refs.titleInner.style.animation = 'none'
+    },
+    scrollTitle () {
+      const title = this.$refs.title
+      const offsetWidth = title.offsetWidth, scrollWidth = title.scrollWidth  // this triggers reflow!
+      document.documentElement.style.setProperty('--title-scroll-amount', `${offsetWidth - scrollWidth}px`)
+      this.$refs.titleInner.style.animation = null
+      this.$refs.titleInner.style.visibility = null
+    },
     fetch () {
       if (!this.isInfoboardEnabled) return this.showBody = false;
       const d = new Date()
@@ -228,23 +255,25 @@ export default {
       const status = this.jumpStatus
       if( status === 'broken' || status === 'cooldown' ) {
         this.showBody = true;
-	this.jumpTime = 0;
+        this.jumpTime = 0;
       }
       this.jump_text = `Next safe jump in ${this.safeJumpCountdown}`;
       if( status === 'jump_initiated' ) {
-	this.item = { title: 'Jump countdown initated', body: `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping in<p style="font-size: 7vw; font-family: Orbitron;">${this.makeCounterHtml(this.jumpCountdown)}</p></div>` };
+        this.item = { title: 'Jump countdown initated', body: `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping in<p style="font-size: 7vw; font-family: Orbitron;">${this.makeCounterHtml(this.jumpCountdown)}</p></div>` };
       } else if( status === 'jumping' && this.jumpTime === 0 ) {
-	this.item = { title: 'Jumping now', body: '<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping</div>' };
+        this.item = { title: 'Jumping now', body: '<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping</div>' };
         this.jumpTime = (new Date()).getTime()
         clearInterval(this.$options.interval)
         this.$options.interval = setInterval(this.brokenFetch, 60)
-      } else if( d.getSeconds() % 5 === 0 ) {
+      } else if( d.getSeconds() % 10 === 0 ) {
+        this.stopTitleScroll()
         axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
-	  .then(response => {
+          .then(response => {
             this.item = response.data
-	  }).catch(function (error) {
-	    console.log(error)
-	  });
+            setTimeout(() => this.scrollTitle(), 0)
+          }).catch(function (error) {
+            console.log(error)
+          });
       }
     },
     makeCounterHtml (text) {  // <counter> replacement for raw HTML; assumes no HTML-escaping is needed!
