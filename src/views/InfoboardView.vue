@@ -78,13 +78,14 @@ $orbitron: 'Orbitron', sans-serif;
     min-width: 100%;
     text-align: center;
     white-space: nowrap;
+    position: relative;
     animation: titlescroll 10s linear;
   }
   @keyframes titlescroll {
-    0% { margin-left: 0; }
-    10% { margin-left: 0; }
-    90% { margin-left: var(--title-scroll-amount); }
-    100% { margin-left: var(--title-scroll-amount); }
+    0% { left: 0; }
+    10% { left: 0; }
+    90% { left: var(--title-scroll-amount); }
+    100% { left: var(--title-scroll-amount); }
   }
 
   .body {
