@@ -146,7 +146,7 @@ const DEFAULT_MESSAGES = {
   status_closed: 'Door closed',
   status_pressurizing: 'Pressurizing',
   status_depressurizing: 'Depressurizing',
-  status_vacuum: 'Vacuum',
+  status_vacuum: 'Open to space',
   // door status messages
   door_open: 'Open',
   door_opening: 'Opening',
@@ -184,7 +184,7 @@ export default {
     },
     mainUIColor () {
       if (this.box.status === 'open' || this.box.status === 'opening') return 'green'
-      if (this.box.status === 'closed' || this.box.status === 'closing') return 'green'
+      // if (this.box.status === 'closed' || this.box.status === 'closing') return 'green'
       return 'red'
     },
     doorColor () {
