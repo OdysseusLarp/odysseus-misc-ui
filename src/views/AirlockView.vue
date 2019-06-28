@@ -197,7 +197,7 @@ export default {
       return 'red'
     },
     openButtonColor () {
-      if (this.box.status === 'opening' || this.box.status === 'open' || this.box.status === 'closing') return 'darkgreen'
+      if (this.box.status === 'opening' || this.box.status === 'open') return 'darkgreen'
       return this.canOpen ? 'green' : 'red'
     },
     closeButtonColor () {
@@ -205,14 +205,14 @@ export default {
       return this.canClose ? 'green' : 'red'
     },
     canOpen () {
-      return this.pressure >= 1 && this.box.status === 'closed'
+      return this.pressure >= 1 && (this.box.status === 'closed' || this.box.status === 'closing')
     },
     canClose () {
       return this.box.status === 'open'
     },
     buttonAction () {
       if (this.box.config.auto_close_delay > 0) return 'open'  // closes automatically
-      if (this.box.status === 'open' || this.box.status === 'closing') return 'close'
+      if (this.box.status === 'open') return 'close'
       return 'open'
     },
     statusMessage () {
