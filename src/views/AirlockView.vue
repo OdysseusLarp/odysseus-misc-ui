@@ -1,5 +1,5 @@
 <template>
-  <div class="airlock-ui">
+  <div class="airlock-ui" v-on:click="onClick">
     <div class="edge left" :class="mainUIColor"></div>
     <div class="sections">
 
@@ -21,10 +21,10 @@
       </div>
 
       <div class="section">
-        <div v-if="buttonAction === 'close'" class="action" :class="closeButtonColor"  v-on:click="closeDoor">
+        <div v-if="buttonAction === 'close'" class="action" :class="closeButtonColor">
           {{localize('button_close')}}
         </div>
-        <div v-else class="action" :class="openButtonColor"  v-on:click="openDoor">
+        <div v-else class="action" :class="openButtonColor">
           {{localize('button_open')}}
         </div>
       </div>
@@ -67,6 +67,8 @@ $bg-blackish: #231f20;  /* gaps and sidebars */
   flex-direction: row;
   color: black;
   background-color: $bg-blackish;
+  user-select: none;
+  cursor: pointer;
 }
 
 .edge {
@@ -227,11 +229,10 @@ export default {
     }
   },
   methods: {
-    openDoor () {
-      if (this.canOpen) this.sendCommand('open')  // backend does the rest
-    },
-    closeDoor () {
-      if (this.canClose) this.sendCommand('close')  // backend does the rest
+    onClick () {
+      if (this.buttonAction === 'open' && this.canOpen) this.sendCommand('open')  // backend does the rest
+      else if (this.buttonAction === 'close' && this.canClose) this.sendCommand('close')  // backend does the rest
+      // TODO: else play bzzzt sound
     },
     localize (message) {
       return this.box.config.messages[message] || DEFAULT_MESSAGES[message]
