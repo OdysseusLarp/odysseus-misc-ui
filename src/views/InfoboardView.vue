@@ -138,6 +138,7 @@ $orbitron: 'Orbitron', sans-serif;
 <script>
 import Counter from '@/components/Counter.vue';
 import { startDataBlobSync } from '../storeSync'
+import { throttle } from 'lodash';
 import axios from 'axios'
 
 export default {
@@ -175,6 +176,8 @@ export default {
     this.$options.interval = setInterval(this.fetch, 1000)
     window.onresize = () => this.resizeFonts();
     setTimeout(() => this.resizeFonts(), 200);
+    this.throttledFetchData = throttle(this.fetchData, 1000);
+    this.fetch();
   },
   beforeDestroy() {
     window.onresize = undefined;
@@ -266,15 +269,9 @@ export default {
         this.jumpTime = (new Date()).getTime()
         clearInterval(this.$options.interval)
         this.$options.interval = setInterval(this.brokenFetch, 60)
-      } else if( d.getSeconds() % 10 === 0 ) {
+      } else if( d.getSeconds() % 10 === 0 || !this.item.title || this.item.title === 'Loading') {
         this.stopTitleScroll()
-        axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
-          .then(response => {
-            this.item = response.data
-            setTimeout(() => this.scrollTitle(), 0)
-          }).catch(function (error) {
-            console.log(error)
-          });
+        this.throttledFetchData()
       }
     },
     makeCounterHtml (text) {  // <counter> replacement for raw HTML; assumes no HTML-escaping is needed!
@@ -287,6 +284,16 @@ export default {
         this.$options.interval = setInterval(this.fetch, 1000)
         this.showBody = false
         this.item = { title: '', body: '' };
+    },
+
+    fetchData() {
+      axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
+        .then(response => {
+          this.item = response.data
+          setTimeout(() => this.scrollTitle(), 0)
+        }).catch(function (error) {
+          console.log(error)
+        });
     }
 
   }
