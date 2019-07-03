@@ -269,8 +269,7 @@ export default {
         this.jumpTime = (new Date()).getTime()
         clearInterval(this.$options.interval)
         this.$options.interval = setInterval(this.brokenFetch, 60)
-      } else if( d.getSeconds() % 10 === 0 || !this.item.title || this.item.title === 'Loading') {
-        this.stopTitleScroll()
+      } else if( d.getSeconds() % 10 === 0 || !this.item.title || ['Loading', 'Jump countdown initated'].includes(this.item.title) ) {
         this.throttledFetchData()
       }
     },
@@ -287,6 +286,7 @@ export default {
     },
 
     fetchData() {
+      this.stopTitleScroll()
       axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
         .then(response => {
           this.item = response.data
