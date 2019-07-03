@@ -4,7 +4,7 @@
       <img :src="`img/infoboard/${solar === 'SOLAR' ? 'solar' : 'lunar'}.svg`">
       <div class="shift">{{ solar }}</div>
       <div class="title" ref="title"><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div></div>
-      <div class="body" v-html="item.body">
+      <div class="body" v-html="item.body" v-bind:class="{ 'short-body': item.body.length < 160 }">
       </div>
       <div class="jump-time"><counter :value="(jump_text || '').toUpperCase()" /></div>
       <div class="ship-time">SHIP TIME: <counter :value="(time || '').toUpperCase()" /></div>
@@ -100,6 +100,12 @@ $orbitron: 'Orbitron', sans-serif;
     // border: 2px solid #0ff;
   }
 
+  .short-body {
+    padding-top: 10vh;
+    font-size: 3rem;
+    text-align: center;
+  }
+
 // Small gradient to indicate that the content is about to cut off
   .body:after {
     content: '';
@@ -167,6 +173,13 @@ export default {
     },
     isInfoboardEnabled() {
       return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'metadata').infoboard_enabled
+    },
+  },
+  watch: {
+    jumpStatus: (newValue, oldValue) => {
+      // Run fetch whenever jumpStatus changes, so that the jump countdown
+      // updates in real time and not a second too late (in the worst case)
+      this.fetch();
     },
   },
   created () {
