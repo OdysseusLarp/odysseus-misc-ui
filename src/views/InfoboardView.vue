@@ -179,7 +179,7 @@ export default {
     jumpStatus: (newValue, oldValue) => {
       // Run fetch whenever jumpStatus changes, so that the jump countdown
       // updates in real time and not a second too late (in the worst case)
-      this.fetch();
+      if (this && this.fetch) this.fetch();
     },
   },
   created () {
@@ -234,6 +234,8 @@ export default {
 
       const jumpTimeBottom = 15 * heightOffset;
 
+      if (!document.documentElement) return console.warn('document.documentElement is not defined, exiting resize');
+
       document.documentElement.style.setProperty('--shift-font-size', `${shiftFontSize}vw`);
       document.documentElement.style.setProperty('--shift-right', `${shiftRight}vw`);
       document.documentElement.style.setProperty('--shift-top', `${shiftTop}vh`);
@@ -254,6 +256,7 @@ export default {
       document.documentElement.style.setProperty('--jump-time-bottom', `${jumpTimeBottom}vh`);
     },
     stopTitleScroll () {
+      if (!this.$refs.titleInner) return;
       this.$refs.titleInner.style.visibility = 'hidden'
       this.$refs.titleInner.style.animation = 'none'
     },
@@ -303,7 +306,10 @@ export default {
       axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
         .then(response => {
           this.item = response.data
-          setTimeout(() => this.scrollTitle(), 0)
+          setTimeout(() => {
+            this.scrollTitle();
+            this.resizeFonts();
+          }, 0)
         }).catch(function (error) {
           console.log(error)
         });
