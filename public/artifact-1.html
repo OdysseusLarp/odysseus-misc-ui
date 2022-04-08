@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Artifact</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #010412 0%, #010412 45%, #011b2b 100%);
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        button {
+            margin-top: 6px;
+            margin-left: 6px;
+            background: linear-gradient(180deg, #010412 0%, #010412 45%, #011b2b 100%);
+            border: 3px solid #006466;
+            color: #fff;
+            font-weight: bold;
+            font-size: 3rem;
+            transition: background 0.15s, border 0.15s;
+            padding: 2rem 4rem;
+        }
+        button:hover:enabled {
+            border: 3px solid #00c5c8;
+            background: #006466;
+            transition: background 0.15s, border 0.15s;
+        }
+        .message {
+            font-size: 3rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <button type="button" id="submit-button">ACTIVATE ARTIFACT</button>
+        <div id="message"></div>
+    </div>
+</body>
+<script>
+    const container = document.querySelector('#app');
+    const btn = document.querySelector('#submit-button');
+    const msg = document.querySelector('#message');
+
+    function useArtifact() {
+        // const API_URL = 'http://192.168.1.2';
+        const API_URL = 'http://localhost:8888';
+        const ARTIFACT_KEY = 'HEALTH_BOOST';
+
+        const fullUrl = `${API_URL}/science/artifact/use/${ARTIFACT_KEY}`;
+
+        fetch(fullUrl, {
+            method: 'PUT',
+            // mode: 'cors',
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res && res.json ? res.json() : {})
+        .then(res => {
+            if (!res || !res.message) return console.error('Did not get a message');
+            console.log('res ==>', res);
+            msg.innerHTML = res.message;
+        });
+    }
+
+    btn.onclick = () => useArtifact();
+</script>
+</html>
