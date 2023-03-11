@@ -3,5 +3,5 @@ module.exports = {
     name: 'Odysseus',
     themeColor: '#2e3192'
   },
-  baseUrl: process.env.NODE_ENV === 'production' ? '/misc/' : ''
+  publicPath: process.env.NODE_ENV === 'production' ? '/misc/' : ''
 }
