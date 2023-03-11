@@ -41,7 +41,7 @@
 $icon-size: 2em;
 $vmargin: 5%;
 $hmargin: 2%;
-$width: (100% - 4*$hmargin)/3;
+$width: calc((100% - 4 * $hmargin) / 3);
 
 .column-container {
   position: absolute;
