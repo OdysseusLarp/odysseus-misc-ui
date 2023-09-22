@@ -36,5 +36,10 @@
 		"--security-opt",
 		"label:disable",
 		"--name", "odysseus-miscui"
-	]
+	],
+	"portsAttributes": {
+		"8082": {
+			"label": "MiscUI"
+		}
+	}
 }

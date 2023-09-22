@@ -16,7 +16,7 @@ Misc UI includes following misc apps
 * Run `npm install` to install dependencies
 * Run `npm run serve` for compiles and hot-reloads for development
 
-Misc UI should now be available at [http://localhost:8081/](http://localhost:8081/)
+Misc UI should now be available at [http://localhost:8082/](http://localhost:8082/)
 
 ## Local setup in VSCode dev container
 
