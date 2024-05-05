@@ -3,11 +3,17 @@
     <div v-if="showBody" class="infoboard-container" ref="infoboardContainer">
       <img :src="`img/infoboard/${solar === 'SOLAR' ? 'solar' : 'lunar'}.svg`">
       <div class="shift">{{ solar }}</div>
-      <div class="title" ref="title"><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div></div>
+      <div class="title" ref="title">
+        <div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div>
+      </div>
       <div class="body" v-html="item.body" v-bind:class="{ 'short-body': item.body.length < 160 }">
       </div>
-      <div class="jump-time"><counter :value="(jump_text || '').toUpperCase()" /></div>
-      <div class="ship-time">SHIP TIME: <counter :value="(time || '').toUpperCase()" /></div>
+      <div class="jump-time">
+        <counter :value="(jump_text || '').toUpperCase()" />
+      </div>
+      <div class="ship-time">SHIP TIME:
+        <counter :value="(time || '').toUpperCase()" />
+      </div>
     </div>
     <div v-else>
       <!-- Show TV-static screen during 'jumping' state -->
@@ -25,6 +31,7 @@
   font-display: swap;
   src: local('Roboto'), local('Roboto-Regular'), url(../assets/fonts/Roboto-Regular.ttf) format('ttf');
 }
+
 $roboto: 'Roboto', sans-serif;
 $orbitron: 'Orbitron', sans-serif;
 
@@ -74,6 +81,7 @@ $orbitron: 'Orbitron', sans-serif;
     // border: 2px solid #0f0;
     overflow: hidden;
   }
+
   .titleInner {
     min-width: 100%;
     text-align: center;
@@ -81,11 +89,23 @@ $orbitron: 'Orbitron', sans-serif;
     position: relative;
     animation: titlescroll 10s linear;
   }
+
   @keyframes titlescroll {
-    0% { left: 0; }
-    10% { left: 0; }
-    90% { left: var(--title-scroll-amount); }
-    100% { left: var(--title-scroll-amount); }
+    0% {
+      left: 0;
+    }
+
+    10% {
+      left: 0;
+    }
+
+    90% {
+      left: var(--title-scroll-amount);
+    }
+
+    100% {
+      left: var(--title-scroll-amount);
+    }
   }
 
   .body {
@@ -106,15 +126,15 @@ $orbitron: 'Orbitron', sans-serif;
     text-align: center;
   }
 
-// Small gradient to indicate that the content is about to cut off
+  // Small gradient to indicate that the content is about to cut off
   .body:after {
     content: '';
     position: absolute;
     height: 8vw;
-    left:0;
+    left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, rgba(#1f1f1f, 0) 0%,rgba(#1f1f1f,1) 100%);
+    background: linear-gradient(to bottom, rgba(#1f1f1f, 0) 0%, rgba(#1f1f1f, 1) 100%);
   }
 
   .ship-time {
@@ -143,9 +163,10 @@ $orbitron: 'Orbitron', sans-serif;
 
 <script>
 import Counter from '@/components/Counter.vue';
-import { startDataBlobSync } from '../storeSync'
+import { startDataBlobSync, startFleetBlobSync  } from '../storeSync'
 import { throttle } from 'lodash';
 import axios from 'axios'
+import { ref } from 'vue'
 
 export default {
   components: { Counter },
@@ -159,7 +180,9 @@ export default {
       jump_text: '',
       jumpTime: 0,
       showBody: true,
+      survival_count: this.getSurvivalCount(),
     }
+
   },
   computed: {
     jumpStatus() {
@@ -174,7 +197,16 @@ export default {
     isInfoboardEnabled() {
       return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'metadata').infoboard_enabled
     },
-  },
+//    calculateSurvivors() {
+//      this.$store.state.survivorCount = this.$store.state.fleetBlobs.reduce((result, ship) => {
+//        // We need to ensure that the property is of the type Number.
+//        let shipCount = parseInt(ship.person_count)
+//        result += shipCount
+//        return result;
+//      }, 0);
+//    },
+
+},
   watch: {
     jumpStatus: (newValue, oldValue) => {
       // Run fetch whenever jumpStatus changes, so that the jump countdown
@@ -182,10 +214,11 @@ export default {
       if (this && this.fetch) this.fetch();
     },
   },
-  created () {
+  created() {
     startDataBlobSync('ship', 'jump')
     startDataBlobSync('ship', 'jumpstate')
     startDataBlobSync('ship', 'metadata')
+    startFleetBlobSync()
     this.$options.interval = setInterval(this.fetch, 1000)
     window.onresize = () => this.resizeFonts();
     setTimeout(() => this.resizeFonts(), 200);
@@ -195,16 +228,26 @@ export default {
   beforeDestroy() {
     window.onresize = undefined;
   },
-  mounted () {
+  mounted() {
     fetch
   },
-  beforeDestroy () {
+  beforeDestroy() {
     clearInterval(this.$options.interval)
   },
   methods: {
+    getSurvivalCount() {
+//    let survival_ref = ref(0);
+//   const blob = this.$store.state.fleetBlobs;
+//   console.log("### " + JSON.stringify(fleetBlobs))
+//    const survival_count = blob.reduce(function (acc, obj) { return acc + parseInt(obj.person_count); }, 0);
+const survival_count = 34;
+
+    console.log("### " + survival_count);
+    return survival_count;
+  },
     getIsSolar() {
       const d = new Date()
-      return ((d.getHours() > 15 && d.getHours() < 20 ) || ( d.getHours() > 3 && d.getHours() < 12));
+      return ((d.getHours() > 15 && d.getHours() < 20) || (d.getHours() > 3 && d.getHours() < 12));
     },
     resizeFonts() {
       const windowWidth = window.innerWidth;
@@ -255,57 +298,67 @@ export default {
 
       document.documentElement.style.setProperty('--jump-time-bottom', `${jumpTimeBottom}vh`);
     },
-    stopTitleScroll () {
+    stopTitleScroll() {
       if (!this.$refs.titleInner) return;
       this.$refs.titleInner.style.visibility = 'hidden'
       this.$refs.titleInner.style.animation = 'none'
     },
-    scrollTitle () {
+    scrollTitle() {
       const title = this.$refs.title
       const offsetWidth = title.offsetWidth, scrollWidth = title.scrollWidth  // this triggers reflow!
       document.documentElement.style.setProperty('--title-scroll-amount', `${offsetWidth - scrollWidth}px`)
       this.$refs.titleInner.style.animation = null
       this.$refs.titleInner.style.visibility = null
     },
-    fetch () {
+    fetch() {
       if (!this.isInfoboardEnabled) return this.showBody = false;
       const d = new Date()
-      this.time = "Year 542, " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "" ) + d.getSeconds()
+      this.time = "Year 542, " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "") + d.getSeconds()
       this.solar = this.getIsSolar() ? 'SOLAR' : 'LUNAR';
       const status = this.jumpStatus
-      if( status === 'broken' || status === 'cooldown' ) {
+      if (status === 'broken' || status === 'cooldown') {
         this.showBody = true;
         this.jumpTime = 0;
       }
       this.jump_text = `Next safe jump in ${this.safeJumpCountdown}`;
-      if( status === 'jump_initiated' ) {
+      if (status === 'jump_initiated') {
         this.item = { title: 'Jump countdown initated', body: `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping in<p style="font-size: 7vw; font-family: Orbitron;">${this.makeCounterHtml(this.jumpCountdown)}</p></div>` };
-      } else if( status === 'jumping' && this.jumpTime === 0 ) {
+      } else if (status === 'jumping' && this.jumpTime === 0) {
         this.item = { title: 'Jumping now', body: '<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping</div>' };
         this.jumpTime = (new Date()).getTime()
         clearInterval(this.$options.interval)
         this.$options.interval = setInterval(this.brokenFetch, 60)
-      } else if( d.getSeconds() % 10 === 0 || !this.item.title || ['Loading', 'Jump countdown initated'].includes(this.item.title) ) {
+      } else if (d.getSeconds() % 10 === 0 || !this.item.title || ['Loading', 'Jump countdown initated'].includes(this.item.title)) {
         this.throttledFetchData()
       }
     },
-    makeCounterHtml (text) {  // <counter> replacement for raw HTML; assumes no HTML-escaping is needed!
+    makeCounterHtml(text) {  // <counter> replacement for raw HTML; assumes no HTML-escaping is needed!
       const html = text.replace(/(\d)/g, '<span class="digit">$1</span>')
       return `<span class="counter">${html}</span>`
     },
 
-    brokenFetch () {
-        clearInterval(this.$options.interval)
-        this.$options.interval = setInterval(this.fetch, 1000)
-        this.showBody = false
-        this.item = { title: '', body: '' };
+    replacePlaceholder(text) {  // <counter> replacement for raw HTML; assumes no HTML-escaping is needed!     
+      const replacedText = text.replace(/%%survival_count%%/g, this.survival_count)
+      return `${replacedText}`
+    },
+
+    brokenFetch() {
+      clearInterval(this.$options.interval)
+      this.$options.interval = setInterval(this.fetch, 1000)
+      this.showBody = false
+      this.item = { title: '', body: '' };
     },
 
     fetchData() {
       this.stopTitleScroll()
-      axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
+      axios.get('/infoboard/display', { baseURL: this.$store.state.backend.uri })
         .then(response => {
           this.item = response.data
+        })
+        .then(() => {
+          if(this.item.body.includes('%%')){
+            this.item.body = this.replacePlaceholder(this.item.body)
+          } 
           setTimeout(() => {
             this.scrollTitle();
             this.resizeFonts();
@@ -314,7 +367,6 @@ export default {
           console.log(error)
         });
     }
-
   }
 }
 

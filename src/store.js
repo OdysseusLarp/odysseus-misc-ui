@@ -13,6 +13,7 @@ const vuexPersist = new VuexPersist({
 const store = new Vuex.Store({
   state: {
     dataBlobs: [],
+    fleetBlobs: [],
     boxId: "",
     backend: {
       uri: process.env.VUE_APP_BACKEND_URI,
@@ -21,14 +22,15 @@ const store = new Vuex.Store({
     }
   },
   mutations: {
-    setBackend (state, backend) {
+    setBackend(state, backend) {
       state.backend = backend
     },
-    setBoxId (state, boxId) {
+    setBoxId(state, boxId) {
       state.boxId = boxId
     },
-    setDataBlob (state, data) {
+    setDataBlob(state, data) {
       let found = false
+      //console.log("### data " + JSON.stringify(state.dataBlobs))
       state.dataBlobs = state.dataBlobs.map(e => {
         if (e.type === data.type && e.id == data.id) {
           found = true
@@ -39,41 +41,84 @@ const store = new Vuex.Store({
       })
       if (!found) {
         state.dataBlobs.push(data)
+
       }
     },
-    deleteDataBlob (state, data) {
+    deleteDataBlob(state, data) {
       state.dataBlobs = state.dataBlobs.filter(e => e.type !== data.type || e.id !== data.id)
     },
+    setFleetBlob(state, data) {
+      let found = false
+      state.fleetBlobs = state.fleetBlobs.map(e => {
+        if (e.id === data.id) {
+          found = true
+          return data
+        } else {
+          return e
+        }
+      })
+      if (!found) {
+        console.log("### Inside of !found " + data.name + " " + data.person_count)
+        state.fleetBlobs.push(data)
+        console.log("### blob " + JSON.stringify(state.fleetBlobs))
+      }
+    },
+    deleteFleetBlob(state, ship) {
+      state.fleetBlobs = state.fleetBlobs.filter(e => e.id !== ship.id)
+    },
+
+    removeNullObjects(arr) {
+      let cleanedArray = [];
+  
+      arr.forEach((item) => {
+          if (Array.isArray(item)) {
+              let cleanedSubArray = removeNullObjects(item);
+              if (cleanedSubArray.length > 0) {
+                  cleanedArray.push(cleanedSubArray);
+              }
+          } else {
+              if (item !== null && item !== undefined) {
+                  cleanedArray.push(item);
+              }
+          }
+      });
+  
+      return cleanedArray;
+  }
+
   },
   actions: {
-    saveDataBlob ({ commit, dispatch, state }, data) {
+    saveDataBlob({ commit, dispatch, state }, data) {
       const type = data.type
       const id = data.id
       commit('setDataBlob', data)
 
       axios.post(`/data/${type}/${id}`, data)
-      .then(response => {
-        commit('setDataBlob', response.data)
-      })
-      .catch(e => {
-        console.error("Error saving data blob, fetching back from server", e)
-        dispatch('fetchDataBlob', data)
-      })
+        .then(response => {
+          commit('setDataBlob', response.data)
+        })
+        .catch(e => {
+          console.error("Error saving data blob, fetching back from server", e)
+          dispatch('fetchDataBlob', data)
+        })
     },
-    fetchDataBlob ({ commit, state }, data) {
+    fetchDataBlob({ commit, state }, data) {
+
       const type = data.type
       const id = data.id
 
       axios.get(`/data/${type}/${id}`)
-      .then(response => {
-        commit('setDataBlob', response.data)
-      })
-      .catch(e => {
-        console.error("Error fetching data blob: ", e)
-      })
+        .then(response => {
+          commit('setDataBlob', response.data)
+        })
+        .catch(e => {
+          console.error("Error fetching data blob: ", e)
+        })
     },
+
     /* type and/or id may be undefined --> all types / ids */
-    syncDataBlobs ({ commit, state, dispatch }, data) {
+    syncDataBlobs({ commit, state, dispatch }, data) {
+
       const type = data.type
       const id = data.id
       let path
@@ -85,30 +130,56 @@ const store = new Vuex.Store({
         path = '/data'
       }
       axios.get(path)
-      .then(response => {
-        if (Array.isArray(response.data)) {
-          response.data.forEach(e => commit('setDataBlob', e))
+        .then(response => {
+          if (Array.isArray(response.data)) {
+            response.data.forEach(e => commit('setDataBlob', e))
 
-          const missing = state.dataBlobs.filter(b => !response.data.find(e => e.type === b.type && e.id === b.id))
-          // console.log("SYNC MISSING IN ACTION", JSON.stringify(missing))
-          if (type && id) {
-            console.error("type and id defined, should not have received an array!")
-          } else if (type) {
-            missing.filter(e => e.type === type).forEach(e => commit('deleteDataBlob', e))
+            const missing = state.dataBlobs.filter(b => !response.data.find(e => e.type === b.type && e.id === b.id))
+            console.log("### DATA SYNC MISSING IN ACTION", JSON.stringify(missing))
+            if (type && id) {
+              console.error("type and id defined, should not have received an array!")
+            } else if (type) {
+              missing.filter(e => e.type === type).forEach(e => commit('deleteDataBlob', e))
+            } else {
+              missing.forEach(e => commit('deleteDataBlob', e))
+            }
           } else {
-            missing.forEach(e => commit('deleteDataBlob', e))
+            commit('setDataBlob', response.data)
           }
-        } else {
-          commit('setDataBlob', response.data)
-        }
-      })
-      .catch(e => {
-        console.error("Error fetching data blobs (retrying in 5 secs): ", e)
-        setTimeout(() => dispatch('syncDataBlobs', data), 5000)
-      })
+        })
+        .catch(e => {
+          console.error("Error fetching data blobs (retrying in 5 secs): ", e)
+          setTimeout(() => dispatch('syncDataBlobs', data), 5000)
+        })
+    },
+
+
+
+    syncFleetBlobs({ commit, state, dispatch }) {
+
+
+      let path = '/fleet'
+
+      axios.get(path)
+        .then(response => {
+          if (Array.isArray(response.data)) {
+            console.log("### syncFleetBlobs - Inside if Array " + JSON.stringify(response.data))
+            response.data.forEach(e => commit('setFleetBlob', e))
+
+            const missing = state.fleetBlobs.filter(b => !response.data.find(e => e.id === b.id))
+            console.log("### SYNC MISSING IN ACTION", JSON.stringify(missing))
+            if (missing) {
+              missing.forEach(e => commit('deleteFleetBlob', e))
+            }
+          }
+        })
+        .catch(e => {
+          console.error("### Error fetching fleet blobs (retrying in 5 secs): ", e)
+          setTimeout(() => dispatch('syncFleetBlobs'), 50000)
+        })
     },
   },
-  plugins: [ vuexPersist.plugin ],
+  plugins: [vuexPersist.plugin],
 })
 
 
