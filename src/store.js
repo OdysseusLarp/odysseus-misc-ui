@@ -30,7 +30,6 @@ const store = new Vuex.Store({
     },
     setDataBlob(state, data) {
       let found = false
-      //console.log("### data " + JSON.stringify(state.dataBlobs))
       state.dataBlobs = state.dataBlobs.map(e => {
         if (e.type === data.type && e.id == data.id) {
           found = true
@@ -58,33 +57,15 @@ const store = new Vuex.Store({
         }
       })
       if (!found) {
-//        console.log("### Inside of !found " + data.name + " " + data.person_count)
         state.fleetBlobs.push(data)
-        //console.log("### blob " + JSON.stringify(state.fleetBlobs))
       }
     },
     deleteFleetBlob(state, ship) {
       state.fleetBlobs = state.fleetBlobs.filter(e => e.id !== ship.id)
     },
-
-    removeNullObjects(arr) {
-      let cleanedArray = [];
-  
-      arr.forEach((item) => {
-          if (Array.isArray(item)) {
-              let cleanedSubArray = removeNullObjects(item);
-              if (cleanedSubArray.length > 0) {
-                  cleanedArray.push(cleanedSubArray);
-              }
-          } else {
-              if (item !== null && item !== undefined) {
-                  cleanedArray.push(item);
-              }
-          }
-      });
-  
-      return cleanedArray;
-  }
+    updateFleetBlob() {
+      store.dispatch('syncFleetBlobs')
+    },
 
   },
   actions: {
@@ -135,7 +116,7 @@ const store = new Vuex.Store({
             response.data.forEach(e => commit('setDataBlob', e))
 
             const missing = state.dataBlobs.filter(b => !response.data.find(e => e.type === b.type && e.id === b.id))
-            console.log("### DATA SYNC MISSING IN ACTION", JSON.stringify(missing))
+            //console.log("### DATA SYNC MISSING IN ACTION", JSON.stringify(missing))
             if (type && id) {
               console.error("type and id defined, should not have received an array!")
             } else if (type) {
@@ -153,21 +134,16 @@ const store = new Vuex.Store({
         })
     },
 
-
-
     syncFleetBlobs({ commit, state, dispatch }) {
-      console.log("### syncFleetBlobs - start ")
 
       let path = '/fleet'
 
       axios.get(path)
         .then(response => {
           if (Array.isArray(response.data)) {
-//            console.log("### syncFleetBlobs - Inside if Array " + JSON.stringify(response.data))
             response.data.forEach(e => commit('setFleetBlob', e))
 
             const missing = state.fleetBlobs.filter(b => !response.data.find(e => e.id === b.id))
-//            console.log("### SYNC MISSING IN ACTION", JSON.stringify(missing))
             if (missing) {
               missing.forEach(e => commit('deleteFleetBlob', e))
             }

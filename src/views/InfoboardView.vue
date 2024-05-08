@@ -234,9 +234,8 @@ export default {
   },
   methods: {
     getSurvivorCount() {
-      console.log("### Getsurvivorcount called")
       this.survivor_count = this.$store.state.fleetBlobs.reduce((acc, obj) => acc + parseInt(obj.person_count), 0);
-}, 
+    }, 
     getIsSolar() {
       const d = new Date()
       return ((d.getHours() > 15 && d.getHours() < 20) || (d.getHours() > 3 && d.getHours() < 12));

@@ -34,17 +34,10 @@ export function startDataBlobSync(type, id) {
 export function startFleetBlobSync() {
   let path = '/fleet'
 
-  console.log("### Initializing fleet blob syncing from " + store.state.backend.uri + " with path " + path)
-
   store.dispatch('syncFleetBlobs')
 
-  const socket = io(`${store.state.backend.uri}/${path}`, {})
-  socket.on('fleetUpdate', (value) => {
-    console.log('fleetUpdate: ' + value)
-    store.commit('setFleetBlob', value)
-  });
-  socket.on('fleetDelete', (id) => {
-    console.log('fleetDelete: ' + id)
-    store.commit('deleteFleetBlob', { id })
+  const socket = io(`${store.state.backend.uri}/data?data=${path}`, {})
+  socket.on('fleetUpdate', function update() {
+    store.commit('updateFleetBlob')
   });
 }
