@@ -180,7 +180,7 @@ export default {
       jump_text: '',
       jumpTime: 0,
       showBody: true,
-      survival_count: this.getSurvivalCount(),
+      survivor_count: 39,
     }
 
   },
@@ -197,15 +197,6 @@ export default {
     isInfoboardEnabled() {
       return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'metadata').infoboard_enabled
     },
-//    calculateSurvivors() {
-//      this.$store.state.survivorCount = this.$store.state.fleetBlobs.reduce((result, ship) => {
-//        // We need to ensure that the property is of the type Number.
-//        let shipCount = parseInt(ship.person_count)
-//        result += shipCount
-//        return result;
-//      }, 0);
-//    },
-
 },
   watch: {
     jumpStatus: (newValue, oldValue) => {
@@ -213,6 +204,10 @@ export default {
       // updates in real time and not a second too late (in the worst case)
       if (this && this.fetch) this.fetch();
     },
+     getSurvivorCount: (newValue, oldValue) => {
+      // Run fetch whenever survivor count changes
+      if (this && this.fetch) this.fetch();
+    }, 
   },
   created() {
     startDataBlobSync('ship', 'jump')
@@ -223,28 +218,26 @@ export default {
     window.onresize = () => this.resizeFonts();
     setTimeout(() => this.resizeFonts(), 200);
     this.throttledFetchData = throttle(this.fetchData, 1000);
+    this.autoSurvivorCount = setInterval(this.getSurvivorCount, 1000);
     this.fetch();
   },
   beforeDestroy() {
     window.onresize = undefined;
   },
   mounted() {
-    fetch
+    fetch;
+    this.getSurvivorCount();
   },
   beforeDestroy() {
     clearInterval(this.$options.interval)
+    clearInterval(this.autoSurvivorCount)
   },
   methods: {
-    getSurvivalCount() {
-//    let survival_ref = ref(0);
-//   const blob = this.$store.state.fleetBlobs;
-//   console.log("### " + JSON.stringify(fleetBlobs))
-//    const survival_count = blob.reduce(function (acc, obj) { return acc + parseInt(obj.person_count); }, 0);
-const survival_count = 34;
-
-    console.log("### " + survival_count);
-    return survival_count;
-  },
+    getSurvivorCount() {
+      console.log("### Getsurvivorcount called")
+//      this.survivor_count = this.$store.state.fleetBlobs.reduce((acc, obj) => acc + parseInt(obj.person_count), 0);
+this.survivor_count = 104;
+}, 
     getIsSolar() {
       const d = new Date()
       return ((d.getHours() > 15 && d.getHours() < 20) || (d.getHours() > 3 && d.getHours() < 12));
@@ -337,9 +330,9 @@ const survival_count = 34;
       return `<span class="counter">${html}</span>`
     },
 
-    replacePlaceholder(text) {  // <counter> replacement for raw HTML; assumes no HTML-escaping is needed!     
-      const replacedText = text.replace(/%%survival_count%%/g, this.survival_count)
-      return `${replacedText}`
+    replacePlaceholder(text) {  // <counter> replacement for raw HTML; assumes no HTML-escaping is needed!  
+      const replacedText = text.replace(/%%survivor_count%%/gi, '<span class="digit">' + this.survivor_count + '</span>')
+      return `<span class="counter">${replacedText}</span>`
     },
 
     brokenFetch() {
@@ -357,6 +350,7 @@ const survival_count = 34;
         })
         .then(() => {
           if(this.item.body.includes('%%')){
+            
             this.item.body = this.replacePlaceholder(this.item.body)
           } 
           setTimeout(() => {

@@ -58,9 +58,9 @@ const store = new Vuex.Store({
         }
       })
       if (!found) {
-        console.log("### Inside of !found " + data.name + " " + data.person_count)
+//        console.log("### Inside of !found " + data.name + " " + data.person_count)
         state.fleetBlobs.push(data)
-        console.log("### blob " + JSON.stringify(state.fleetBlobs))
+        //console.log("### blob " + JSON.stringify(state.fleetBlobs))
       }
     },
     deleteFleetBlob(state, ship) {
@@ -156,18 +156,18 @@ const store = new Vuex.Store({
 
 
     syncFleetBlobs({ commit, state, dispatch }) {
-
+      console.log("### syncFleetBlobs - start ")
 
       let path = '/fleet'
 
       axios.get(path)
         .then(response => {
           if (Array.isArray(response.data)) {
-            console.log("### syncFleetBlobs - Inside if Array " + JSON.stringify(response.data))
+//            console.log("### syncFleetBlobs - Inside if Array " + JSON.stringify(response.data))
             response.data.forEach(e => commit('setFleetBlob', e))
 
             const missing = state.fleetBlobs.filter(b => !response.data.find(e => e.id === b.id))
-            console.log("### SYNC MISSING IN ACTION", JSON.stringify(missing))
+//            console.log("### SYNC MISSING IN ACTION", JSON.stringify(missing))
             if (missing) {
               missing.forEach(e => commit('deleteFleetBlob', e))
             }
@@ -175,7 +175,7 @@ const store = new Vuex.Store({
         })
         .catch(e => {
           console.error("### Error fetching fleet blobs (retrying in 5 secs): ", e)
-          setTimeout(() => dispatch('syncFleetBlobs'), 50000)
+          setTimeout(() => dispatch('syncFleetBlobs'), 5000)
         })
     },
   },

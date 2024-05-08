@@ -38,14 +38,13 @@ export function startFleetBlobSync() {
 
   store.dispatch('syncFleetBlobs')
 
-/*   const fleetSocket = io(`${store.state.backend.uri}/${path}`, {})
-  console.log("### fleetSocket " + fleetSocket)
-  fleetSocket.on('fleetUpdate', (value) => {
+  const socket = io(`${store.state.backend.uri}/${path}`, {})
+  socket.on('fleetUpdate', (value) => {
     console.log('fleetUpdate: ' + value)
     store.commit('setFleetBlob', value)
   });
-  fleetSocket.on('fleetDelete', (id) => {
+  socket.on('fleetDelete', (id) => {
     console.log('fleetDelete: ' + id)
     store.commit('deleteFleetBlob', { id })
-  }); */
+  });
 }
