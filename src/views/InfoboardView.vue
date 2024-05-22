@@ -1,13 +1,16 @@
 <template>
   <div class="app-container">
     <div v-if="showBody" class="infoboard-container" ref="infoboardContainer">
-      <img :src="`img/infoboard/${solar === 'SOLAR' ? 'solar' : 'lunar'}.svg`">
-      <div class="shift">{{ solar }}</div>
+      <img class="bg-img":src="`img/infoboard/${solar.toLowerCase()}.svg`">
       <div class="title" ref="title"><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div></div>
       <div class="body" v-html="item.body" v-bind:class="{ 'short-body': item.body.length < 160 }">
       </div>
+      <div class="jump-time-text">NEXT SAFE JUMP</div>
       <div class="jump-time"><counter :value="(jump_text || '').toUpperCase()" /></div>
-      <div class="ship-time">SHIP TIME: <counter :value="(time || '').toUpperCase()" /></div>
+      <div class="ship-time-text">SHIP TIME</div>
+      <div class="ship-time"><counter :value="(time || '').toUpperCase()" /></div>
+      <div class="shift-time-text">NEXT SHIFT <span><img class="nextShift-img" :src="`img/icons/${nextShiftIcon}.svg`"></span> </div>
+      <div class="shift-time"><counter :value="shiftTime.toUpperCase()" /></div>
     </div>
     <div v-else>
       <!-- Show TV-static screen during 'jumping' state -->
@@ -47,9 +50,16 @@ $orbitron: 'Orbitron', sans-serif;
   align-items: center;
   justify-content: center;
 
-  img {
-    max-height: 100vh;
+  .bg-img {
+    height: 100vh;
     max-width: 100vw;
+    object-fit: cover;
+  }
+
+  .nextShift-img {
+    width: 4vh;
+    height: 4vh;
+    margin-left: 1vw;
   }
 
   .shift {
@@ -97,6 +107,7 @@ $orbitron: 'Orbitron', sans-serif;
     height: var(--body-max-height);
     font-family: $roboto;
     overflow: hidden;
+    margin: 1rem;
     // border: 2px solid #0ff;
   }
 
@@ -123,7 +134,16 @@ $orbitron: 'Orbitron', sans-serif;
     left: var(--ship-time-left);
     font-size: var(--ship-time-font-size);
     line-height: normal;
-    font-weight: bold;
+    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
+    // border: 2px solid #0f0;
+  }
+
+  .ship-time-text {
+    position: absolute;
+    bottom: var(--ship-time-text-bottom);
+    left: var(--ship-time-left);
+    font-size: var(--ship-time-font-size);
+    line-height: normal;
     text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
     // border: 2px solid #0f0;
   }
@@ -131,12 +151,40 @@ $orbitron: 'Orbitron', sans-serif;
   .jump-time {
     position: absolute;
     bottom: var(--jump-time-bottom);
-    left: var(--ship-time-left);
+    left: var(--jump-time-left);
     font-size: var(--ship-time-font-size);
     line-height: normal;
-    font-weight: bold;
     text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
     // border: 2px solid #00f;
+  }
+  .jump-time-text {
+    position: absolute;
+    bottom: var(--jump-time-text-bottom);
+    left: var(--jump-time-left);
+    font-size: var(--ship-time-font-size);
+    line-height: normal;
+    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
+    // border: 2px solid #00f;
+  }
+  .shift-time {
+    position: absolute;
+    bottom: var(--shift-time-bottom);
+    left: var(--shift-time-left);
+    font-size: var(--ship-time-font-size);
+    line-height: normal;
+    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
+    // border: 2px solid #f00;
+
+  }
+  .shift-time-text {
+    position: absolute;
+    bottom: var(--shift-time-text-bottom); 
+    left: var(--shift-time-left);
+    font-size: var(--ship-time-font-size);
+    line-height: normal;
+    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
+    // border: 2px solid #f00;
+
   }
 }
 </style>
@@ -154,7 +202,9 @@ export default {
       item: {
         title: 'Loading', body: 'Wait until data is loaded'
       },
-      solar: this.getIsSolar() ? 'SOLAR' : 'LUNAR',
+      nextShift: this.getNextShift(),
+      solar: this.getCurrentShift(),
+      nextShiftIcon: this.getNextShiftIcon(),
       time: (new Date()).toLocaleString(),
       jump_text: '',
       jumpTime: 0,
@@ -194,17 +244,73 @@ export default {
   },
   beforeDestroy() {
     window.onresize = undefined;
+    clearInterval(this.interval);
   },
   mounted () {
-    fetch
+    fetch;
+    this.updateShiftTimer();  // Initial update
+    this.interval = setInterval(this.updateShiftTimer, 1000);  // Update every second
   },
   beforeDestroy () {
     clearInterval(this.$options.interval)
   },
   methods: {
-    getIsSolar() {
-      const d = new Date()
-      return ((d.getHours() > 15 && d.getHours() < 20 ) || ( d.getHours() > 3 && d.getHours() < 12));
+
+    formatTime(milliseconds) {
+      let seconds = Math.floor(milliseconds / 1000);
+      let minutes = Math.floor(seconds / 60);
+      let hours = Math.floor(minutes / 60);
+      seconds = seconds % 60;
+      minutes = minutes % 60;
+      return `T-${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    },
+
+    getCurrentShift() {
+      const d = new Date();
+      const hour = d.getHours();
+
+      // Determine shift based on the hour of the day
+      if ((hour > 15 && hour < 20) || (hour > 3 && hour < 12)) {
+        return 'SOLAR';
+      } else if (hour > 20 || hour < 3) {
+        return 'LUNAR';
+      } else {
+        return 'TWILIGHT';
+      }
+    },
+
+    getNextShiftIcon() {
+      const nextShift = this.getCurrentShift();
+      if (nextShift === 'SOLAR') {
+        return 'icon-lunar';
+      } else if (nextShift === 'LUNAR') {
+        return 'icon-solar';
+      } else {
+        return 'icon-solar';
+      }
+    },
+ 
+    getNextShift() {
+      const now = new Date();
+      const currentHour = now.getHours();
+
+      // Define shift changes based on provided times
+      if ((currentHour >= 15 && currentHour < 20)) {
+        return { name: 'SOLAR', startsAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20) }; // Solar ends at 20:00
+      } else if (currentHour >= 20 || currentHour < 3) {
+        return { name: 'LUNAR', startsAt: new Date(now.getFullYear(), now.getMonth(), now.getDate() + (currentHour >= 20 ? 1 : 0), 3) }; // Lunar ends at 03:00
+      } else {
+        // If it's between 03:00 and 15:00, it's TWILIGHT time and SOLAR starts at 15:00
+        return { name: 'TWILIGHT', startsAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15) };
+      }
+    },
+    updateShiftTimer() {
+      const now = new Date();
+      const timeToNextShift = this.nextShift.startsAt - now;
+      if (timeToNextShift <= 0) {
+        this.nextShift = this.getNextShift();  // Recalculate the next shift if current one is over
+      }
+      this.shiftTime = this.formatTime(timeToNextShift);
     },
     resizeFonts() {
       const windowWidth = window.innerWidth;
@@ -220,7 +326,7 @@ export default {
       const shiftTop = 5 * heightOffset;
 
       const titleFontSize = 8 * widthOffset;
-      const titleTop = 18 * heightOffset;
+      const titleTop = 22 * heightOffset;
       const titleLeftRight = 8 * heightOffset;
 
       const bodyTop = 30 * heightOffset;
@@ -228,11 +334,18 @@ export default {
       const bodyFontSize = 4 * widthOffset;
       const bodyMaxHeight = 47.5 * heightOffset;
 
-      const shipTimeFontSize = 2.2 * widthOffset;
-      const shipTimeLeft = 6 * widthOffset;
-      const shipTimeBottom = 8 * heightOffset;
+      const shipTimeFontSize = 1.7 * widthOffset;
+      const shipTimeLeft = 68 * widthOffset;
+      const shipTimeBottom = 7.8 * heightOffset;
+      const shipTimeTextBottom = 15 * heightOffset;
 
-      const jumpTimeBottom = 15 * heightOffset;
+      const jumpTimeLeft = 7 * widthOffset;
+      const jumpTimeBottom = 7.8 * heightOffset;
+      const jumpTimeTextBottom = 15 * heightOffset;
+
+      const shiftTimeLeft = 38 * widthOffset;
+      const shiftTimeBottom = 7.8 * heightOffset;
+      const shiftTimeTextBottom = 15 * heightOffset;
 
       if (!document.documentElement) return console.warn('document.documentElement is not defined, exiting resize');
 
@@ -252,8 +365,15 @@ export default {
       document.documentElement.style.setProperty('--ship-time-font-size', `${shipTimeFontSize}vw`);
       document.documentElement.style.setProperty('--ship-time-left', `${shipTimeLeft}vw`);
       document.documentElement.style.setProperty('--ship-time-bottom', `${shipTimeBottom}vh`);
+      document.documentElement.style.setProperty('--ship-time-text-bottom', `${shipTimeTextBottom}vh`);
 
+      document.documentElement.style.setProperty('--jump-time-left', `${jumpTimeLeft}vw`);
       document.documentElement.style.setProperty('--jump-time-bottom', `${jumpTimeBottom}vh`);
+      document.documentElement.style.setProperty('--jump-time-text-bottom', `${jumpTimeTextBottom}vh`);
+
+      document.documentElement.style.setProperty('--shift-time-left', `${shiftTimeLeft}vw`);
+      document.documentElement.style.setProperty('--shift-time-bottom', `${shiftTimeBottom}vh`);
+      document.documentElement.style.setProperty('--shift-time-text-bottom', `${shiftTimeTextBottom}vh`);
     },
     stopTitleScroll () {
       if (!this.$refs.titleInner) return;
@@ -270,14 +390,13 @@ export default {
     fetch () {
       if (!this.isInfoboardEnabled) return this.showBody = false;
       const d = new Date()
-      this.time = "Year 542, " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "" ) + d.getSeconds()
-      this.solar = this.getIsSolar() ? 'SOLAR' : 'LUNAR';
+      this.time = "Year 542\u00A0 | " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "" ) + d.getSeconds();
       const status = this.jumpStatus
       if( status === 'broken' || status === 'cooldown' ) {
         this.showBody = true;
         this.jumpTime = 0;
       }
-      this.jump_text = `Next safe jump in ${this.safeJumpCountdown}`;
+      this.jump_text = this.safeJumpCountdown;
       if( status === 'jump_initiated' ) {
         this.item = { title: 'Jump countdown initated', body: `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 5vw;">Ship jumping in<p style="font-size: 7vw; font-family: Orbitron;">${this.makeCounterHtml(this.jumpCountdown)}</p></div>` };
       } else if( status === 'jumping' && this.jumpTime === 0 ) {
