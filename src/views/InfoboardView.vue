@@ -3,15 +3,15 @@
     <div v-if="showBody" class="infoboard-container" ref="infoboardContainer">
       <img class="background-image":src="getBackgroundImage()" />
       &nbsp;
-      <div class="title" ref="title"><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div></div>
+      <div class="title" ref="title"><div class="title-gradient left"></div><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div><div class="title-gradient right"></div></div>
       <div class="body" v-html="item.body" v-bind:class="{ 'short-body': item.body.length < 160 }">
       </div>
       <div class="bottom-text label jump-time">NEXT SAFE JUMP</div>
-      <div class="bottom-text value jump-time"><counter :value="(safeJumpCountdown || '').toUpperCase()" /></div>
+      <div class="bottom-text value jump-time">{{ safeJumpCountdown ?? "" }}</div>
       <div class="bottom-text label next-shift">NEXT SHIFT <img class="next-shift-icon" :src="getNextShiftIcon()" /></div>
       <div class="bottom-text value next-shift">{{ calculateTimeUntilNextShift() }}</div>
       <div class="bottom-text label ship-time">SHIP TIME</div>
-      <div class="bottom-text value ship-time"><counter :value="(time || '').toUpperCase()" /></div>
+      <div class="bottom-text value ship-time">{{ time ?? "Year 542 | ??:??"}}</div>
     </div>
     <div v-else>
       <!-- Show TV-static screen during 'jumping' state -->
@@ -82,6 +82,24 @@ $orbitron: 'Orbitron', sans-serif;
     white-space: nowrap;
     position: relative;
     animation: titlescroll 10s linear;
+  }
+  .title-gradient {
+    width: 3rem;
+    height: 100%;
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    z-index: 99;
+  }
+  .title-gradient.left {
+    left: 0;
+    background: linear-gradient(to left, transparent, var(--title-background-color));
+  }
+  .title-gradient.right {
+    right: 0;
+    background: linear-gradient(to right, transparent, var(--title-background-color));
+    // Clip off the bottom right corner to match the background svg
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 80% 100%, 0 100%);
   }
   @keyframes titlescroll {
     0% { left: 0; }
@@ -177,7 +195,7 @@ export default {
   data() {
     return {
       item: {
-        title: 'Loading', body: 'Wait until data is loaded'
+        title: 'Loading', body: 'Loading...'
       },
       time: (new Date()).toLocaleString(),
       jump_text: '',
@@ -259,13 +277,29 @@ export default {
 
       const timeDifference = nextShift - new Date();
       const hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60));
-      const minutesLeft = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+      const minutesLeft = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60)) + 1;
 
       const formattedTimeLeft = `T-${String(hoursLeft).padStart(2, '0')}:${String(minutesLeft).padStart(2, '0')}`;
       const formattedNextShiftTime = `${String(nextShiftHour).padStart(2, '0')}:00`;
-      return `${formattedTimeLeft} | ${formattedNextShiftTime}`;
+      return `${formattedTimeLeft} AT ${formattedNextShiftTime}`;
+    },
+    setTitleBackgroundColor() {
+      const shift = this.getShift();
+      let color = "";
+      switch (shift) {
+        case Shifts.Solar:
+          color = "#f4a416";
+          break;
+        case Shifts.Lunar:
+          color = "#272782";
+          break;
+        default:
+          color = "#af0050";
+      }
+      document.documentElement.style.setProperty('--title-background-color', color);
     },
     getBackgroundImage() {
+      this.setTitleBackgroundColor();
       switch (this.getShift()) {
         case Shifts.Solar:
           return 'img/infoboard/bg-solar.svg';
@@ -300,7 +334,7 @@ export default {
 
       const titleFontSize = 8 * widthOffset;
       const titleTop = 22 * heightOffset;
-      const titleLeftRight = 8 * heightOffset;
+      const titleLeftRight = 11.5 * heightOffset;
 
       const bodyTop = 33 * heightOffset;
       const bodyLeftRight = 10 * heightOffset;
@@ -340,7 +374,7 @@ export default {
     },
     stopTitleScroll () {
       if (!this.$refs.titleInner) return;
-      this.$refs.titleInner.style.visibility = 'hidden'
+      // this.$refs.titleInner.style.visibility = 'hidden'
       this.$refs.titleInner.style.animation = 'none'
     },
     scrollTitle () {
@@ -384,9 +418,9 @@ export default {
     },
 
     fetchData() {
-      this.stopTitleScroll()
       axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
         .then(response => {
+          this.stopTitleScroll();
           this.item = response.data
           setTimeout(() => {
             this.scrollTitle();
