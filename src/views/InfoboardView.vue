@@ -28,6 +28,14 @@
   font-display: swap;
   src: local('Roboto'), local('Roboto-Regular'), url(../assets/fonts/Roboto-Regular.ttf) format('ttf');
 }
+@font-face {
+    font-family: 'Oxanium';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: local('Oxanium-Medium'), url('../assets/fonts/Oxanium-Medium.ttf') format('truetype');
+}
+
 $roboto: 'Roboto', sans-serif;
 $orbitron: 'Orbitron', sans-serif;
 
@@ -114,10 +122,9 @@ $orbitron: 'Orbitron', sans-serif;
   .bottom-text {
     position: fixed;
     font-family: 'Oxanium';
-    font-weight: 500;
     font-size: var(--bottom-text-font-size);
     line-height: normal;
-    font-weight: bold;
+    font-weight: 400;
     text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
     width: 25.4vw;
     text-align: center;
