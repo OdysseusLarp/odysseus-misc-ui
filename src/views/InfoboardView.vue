@@ -1,16 +1,17 @@
 <template>
   <div class="app-container">
     <div v-if="showBody" class="infoboard-container" ref="infoboardContainer">
-      <img class="bg-img":src="`img/infoboard/${solar.toLowerCase()}.svg`">
-      <div class="title" ref="title"><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div></div>
+      <img class="background-image":src="getBackgroundImage()" />
+      &nbsp;
+      <div class="title" ref="title"><div class="title-gradient left"></div><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div><div class="title-gradient right"></div></div>
       <div class="body" v-html="item.body" v-bind:class="{ 'short-body': item.body.length < 160 }">
       </div>
-      <div class="jump-time-text">NEXT SAFE JUMP</div>
-      <div class="jump-time"><counter :value="(jump_text || '').toUpperCase()" /></div>
-      <div class="ship-time-text">SHIP TIME</div>
-      <div class="ship-time"><counter :value="(time || '').toUpperCase()" /></div>
-      <div class="shift-time-text">NEXT SHIFT <span><img class="nextShift-img" :src="`img/icons/${nextShiftIcon}.svg`"></span> </div>
-      <div class="shift-time"><counter :value="shiftTime.toUpperCase()" /></div>
+      <div class="bottom-text label jump-time">NEXT SAFE JUMP</div>
+      <div class="bottom-text value jump-time">{{ safeJumpCountdown ?? "" }}</div>
+      <div class="bottom-text label next-shift">NEXT SHIFT <img class="next-shift-icon" :src="getNextShiftIcon()" /></div>
+      <div class="bottom-text value next-shift">{{ calculateTimeUntilNextShift() }}</div>
+      <div class="bottom-text label ship-time">SHIP TIME</div>
+      <div class="bottom-text value ship-time">{{ time ?? "Year 542 | ??:??"}}</div>
     </div>
     <div v-else>
       <!-- Show TV-static screen during 'jumping' state -->
@@ -20,7 +21,6 @@
 </template>
 
 <style lang="scss" scoped>
-// @import url(https://fonts.googleapis.com/css?family=Roboto|Orbitron:400italic,700italic,400,700);
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
@@ -28,6 +28,14 @@
   font-display: swap;
   src: local('Roboto'), local('Roboto-Regular'), url(../assets/fonts/Roboto-Regular.ttf) format('ttf');
 }
+@font-face {
+    font-family: 'Oxanium';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: local('Oxanium-Medium'), url('../assets/fonts/Oxanium-Medium.ttf') format('truetype');
+}
+
 $roboto: 'Roboto', sans-serif;
 $orbitron: 'Orbitron', sans-serif;
 
@@ -49,28 +57,12 @@ $orbitron: 'Orbitron', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 
-  .bg-img {
-    height: 100vh;
+  .background-image {
+    max-height: 100vh;
     max-width: 100vw;
-    object-fit: cover;
-  }
-
-  .nextShift-img {
-    width: 4vh;
-    height: 4vh;
-    margin-left: 1vw;
-  }
-
-  .shift {
-    position: absolute;
-    top: var(--shift-top);
-    right: var(--shift-right);
-    font-size: var(--shift-font-size);
-    font-family: $orbitron;
-    transform: translate(50%, 0);
-    line-height: normal;
-    // border: 2px solid #f00;
   }
 
   .title {
@@ -90,6 +82,24 @@ $orbitron: 'Orbitron', sans-serif;
     white-space: nowrap;
     position: relative;
     animation: titlescroll 10s linear;
+  }
+  .title-gradient {
+    width: 3rem;
+    height: 100%;
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    z-index: 99;
+  }
+  .title-gradient.left {
+    left: 0;
+    background: linear-gradient(to left, transparent, var(--title-background-color));
+  }
+  .title-gradient.right {
+    right: 0;
+    background: linear-gradient(to right, transparent, var(--title-background-color));
+    // Clip off the bottom right corner to match the background svg
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 80% 100%, 0 100%);
   }
   @keyframes titlescroll {
     0% { left: 0; }
@@ -128,43 +138,43 @@ $orbitron: 'Orbitron', sans-serif;
     background: linear-gradient(to bottom, rgba(#1f1f1f, 0) 0%,rgba(#1f1f1f,1) 100%);
   }
 
-  .ship-time {
-    position: absolute;
-    bottom: var(--ship-time-bottom);
-    left: var(--ship-time-left);
-    font-size: var(--ship-time-font-size);
+  .bottom-text {
+    position: fixed;
+    font-family: 'Oxanium';
+    font-size: var(--bottom-text-font-size);
     line-height: normal;
+    font-weight: 400;
     text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
-    // border: 2px solid #0f0;
+    width: 25.4vw;
+    text-align: center;
   }
 
-  .ship-time-text {
-    position: absolute;
-    bottom: var(--ship-time-text-bottom);
-    left: var(--ship-time-left);
-    font-size: var(--ship-time-font-size);
-    line-height: normal;
-    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
-    // border: 2px solid #0f0;
+  .label {
+      bottom: var(--bottom-text-label-position);
+    }
+
+  .value {
+    bottom: var(--bottom-text-value-position);
+    // font-size: 1.5em;
   }
 
   .jump-time {
-    position: absolute;
-    bottom: var(--jump-time-bottom);
     left: var(--jump-time-left);
-    font-size: var(--ship-time-font-size);
-    line-height: normal;
-    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
-    // border: 2px solid #00f;
   }
-  .jump-time-text {
-    position: absolute;
-    bottom: var(--jump-time-text-bottom);
-    left: var(--jump-time-left);
-    font-size: var(--ship-time-font-size);
-    line-height: normal;
-    text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
-    // border: 2px solid #00f;
+
+  .next-shift {
+    left: var(--next-shift-left);
+  }
+
+  .ship-time {
+    left: var(--ship-time-left);
+  }
+
+  .next-shift-icon {
+    margin-left: 0.4rem;
+    margin-bottom: 0.3rem;
+    width: 1.8rem;
+    height: 1.8rem;
   }
   .shift-time {
     position: absolute;
@@ -195,16 +205,19 @@ import { startDataBlobSync } from '../storeSync'
 import { throttle } from 'lodash';
 import axios from 'axios'
 
+const Shifts = {
+  Solar: 'SOLAR',
+  Lunar: 'LUNAR',
+  Twilight: 'TWILIGHT',
+};
+
 export default {
   components: { Counter },
   data() {
     return {
       item: {
-        title: 'Loading', body: 'Wait until data is loaded'
+        title: 'Loading', body: 'Loading...'
       },
-      nextShift: this.getNextShift(),
-      solar: this.getCurrentShift(),
-      nextShiftIcon: this.getNextShiftIcon(),
       time: (new Date()).toLocaleString(),
       jump_text: '',
       jumpTime: 0,
@@ -255,62 +268,80 @@ export default {
     clearInterval(this.$options.interval)
   },
   methods: {
-
-    formatTime(milliseconds) {
-      let seconds = Math.floor(milliseconds / 1000);
-      let minutes = Math.floor(seconds / 60);
-      let hours = Math.floor(minutes / 60);
-      seconds = seconds % 60;
-      minutes = minutes % 60;
-      return `T-${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    getShift() {
+      const hour = new Date().getHours();
+      if (hour >= 4 && hour < 8) return Shifts.Solar;
+      if (hour >= 8 && hour < 12) return Shifts.Twilight;
+      if (hour >= 12 && hour < 16) return Shifts.Lunar;
+      if (hour >= 16 && hour < 20) return Shifts.Solar;
+      return Shifts.Twilight;
     },
-
-    getCurrentShift() {
-      const d = new Date();
-      const hour = d.getHours();
-
-      // Determine shift based on the hour of the day
-      if ((hour > 15 && hour < 20) || (hour > 3 && hour < 12)) {
-        return 'SOLAR';
-      } else if (hour > 20 || hour < 3) {
-        return 'LUNAR';
-      } else {
-        return 'TWILIGHT';
-      }
-    },
-
-    getNextShiftIcon() {
-      const nextShift = this.getCurrentShift();
-      if (nextShift === 'SOLAR') {
-        return 'icon-lunar';
-      } else if (nextShift === 'LUNAR') {
-        return 'icon-solar';
-      } else {
-        return 'icon-solar';
-      }
-    },
- 
     getNextShift() {
+      const currentShift = this.getShift();
+      if (currentShift === Shifts.Solar) return Shifts.Lunar;
+      if (currentShift === Shifts.Lunar) return Shifts.Twilight;
+      return Shifts.Solar;
+    },
+    calculateTimeUntilNextShift() {
       const now = new Date();
       const currentHour = now.getHours();
 
-      // Define shift changes based on provided times
-      if ((currentHour >= 15 && currentHour < 20)) {
-        return { name: 'SOLAR', startsAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20) }; // Solar ends at 20:00
-      } else if (currentHour >= 20 || currentHour < 3) {
-        return { name: 'LUNAR', startsAt: new Date(now.getFullYear(), now.getMonth(), now.getDate() + (currentHour >= 20 ? 1 : 0), 3) }; // Lunar ends at 03:00
-      } else {
-        // If it's between 03:00 and 15:00, it's TWILIGHT time and SOLAR starts at 15:00
-        return { name: 'TWILIGHT', startsAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15) };
+      const shiftStartTimes = [0, 4, 8, 12, 16, 20];
+
+      let nextShiftHour = shiftStartTimes.find(hour => hour > currentHour);
+
+      // If no future shift start time is found in the same day, take the first shift of the next day
+      if (nextShiftHour === undefined) {
+        nextShiftHour = shiftStartTimes[0];
+        now.setDate(now.getDate() + 1);
+      }
+
+      const nextShift = new Date(now);
+      nextShift.setHours(nextShiftHour, 0, 0, 0);
+
+      const timeDifference = nextShift - new Date();
+      const hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60));
+      const minutesLeft = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60)) + 1;
+
+      const formattedTimeLeft = `T-${String(hoursLeft).padStart(2, '0')}:${String(minutesLeft).padStart(2, '0')}`;
+      const formattedNextShiftTime = `${String(nextShiftHour).padStart(2, '0')}:00`;
+      return `${formattedTimeLeft} AT ${formattedNextShiftTime}`;
+    },
+    setTitleBackgroundColor() {
+      const shift = this.getShift();
+      let color = "";
+      switch (shift) {
+        case Shifts.Solar:
+          color = "#f4a416";
+          break;
+        case Shifts.Lunar:
+          color = "#272782";
+          break;
+        default:
+          color = "#af0050";
+      }
+      document.documentElement.style.setProperty('--title-background-color', color);
+    },
+    getBackgroundImage() {
+      this.setTitleBackgroundColor();
+      switch (this.getShift()) {
+        case Shifts.Solar:
+          return 'img/infoboard/bg-solar.svg';
+        case Shifts.Lunar:
+          return 'img/infoboard/bg-lunar.svg';
+        default:
+          return 'img/infoboard/bg-twilight.svg';
       }
     },
-    updateShiftTimer() {
-      const now = new Date();
-      const timeToNextShift = this.nextShift.startsAt - now;
-      if (timeToNextShift <= 0) {
-        this.nextShift = this.getNextShift();  // Recalculate the next shift if current one is over
+    getNextShiftIcon() {
+      switch (this.getNextShift()) {
+        case Shifts.Solar:
+          return 'img/infoboard/icon-solar.svg';
+        case Shifts.Lunar:
+          return 'img/infoboard/icon-lunar.svg';
+        default:
+          return 'img/infoboard/icon-twilight.svg';
       }
-      this.shiftTime = this.formatTime(timeToNextShift);
     },
     resizeFonts() {
       const windowWidth = window.innerWidth;
@@ -327,25 +358,20 @@ export default {
 
       const titleFontSize = 8 * widthOffset;
       const titleTop = 22 * heightOffset;
-      const titleLeftRight = 8 * heightOffset;
+      const titleLeftRight = 11.5 * heightOffset;
 
-      const bodyTop = 30 * heightOffset;
-      const bodyLeftRight = 5 * heightOffset;
+      const bodyTop = 33 * heightOffset;
+      const bodyLeftRight = 10 * heightOffset;
       const bodyFontSize = 4 * widthOffset;
       const bodyMaxHeight = 47.5 * heightOffset;
 
-      const shipTimeFontSize = 1.7 * widthOffset;
-      const shipTimeLeft = 68 * widthOffset;
-      const shipTimeBottom = 7.8 * heightOffset;
-      const shipTimeTextBottom = 15 * heightOffset;
+      const bottomTextFontSize = 2.2 * widthOffset;
+      const bottomTextLabelPosition = 13.6 * heightOffset;
+      const bottomTextValuePosition = 7 * heightOffset;
 
-      const jumpTimeLeft = 7 * widthOffset;
-      const jumpTimeBottom = 7.8 * heightOffset;
-      const jumpTimeTextBottom = 15 * heightOffset;
-
-      const shiftTimeLeft = 38 * widthOffset;
-      const shiftTimeBottom = 7.8 * heightOffset;
-      const shiftTimeTextBottom = 15 * heightOffset;
+      const jumpTimeLeft = 10 * widthOffset;
+      const nextShiftLeft = 37.2 * widthOffset;
+      const shipTimeLeft = 64.4 * widthOffset;
 
       if (!document.documentElement) return console.warn('document.documentElement is not defined, exiting resize');
 
@@ -362,22 +388,17 @@ export default {
       document.documentElement.style.setProperty('--body-font-size', `${bodyFontSize}vh`);
       document.documentElement.style.setProperty('--body-leftRight', `${bodyLeftRight}vw`);
 
-      document.documentElement.style.setProperty('--ship-time-font-size', `${shipTimeFontSize}vw`);
-      document.documentElement.style.setProperty('--ship-time-left', `${shipTimeLeft}vw`);
-      document.documentElement.style.setProperty('--ship-time-bottom', `${shipTimeBottom}vh`);
-      document.documentElement.style.setProperty('--ship-time-text-bottom', `${shipTimeTextBottom}vh`);
-
       document.documentElement.style.setProperty('--jump-time-left', `${jumpTimeLeft}vw`);
-      document.documentElement.style.setProperty('--jump-time-bottom', `${jumpTimeBottom}vh`);
-      document.documentElement.style.setProperty('--jump-time-text-bottom', `${jumpTimeTextBottom}vh`);
+      document.documentElement.style.setProperty('--next-shift-left', `${nextShiftLeft}vw`);
+      document.documentElement.style.setProperty('--ship-time-left', `${shipTimeLeft}vw`);
 
-      document.documentElement.style.setProperty('--shift-time-left', `${shiftTimeLeft}vw`);
-      document.documentElement.style.setProperty('--shift-time-bottom', `${shiftTimeBottom}vh`);
-      document.documentElement.style.setProperty('--shift-time-text-bottom', `${shiftTimeTextBottom}vh`);
+      document.documentElement.style.setProperty('--bottom-text-font-size', `${bottomTextFontSize}vw`);
+      document.documentElement.style.setProperty('--bottom-text-label-position', `${bottomTextLabelPosition}vh`);
+      document.documentElement.style.setProperty('--bottom-text-value-position', `${bottomTextValuePosition}vh`);
     },
     stopTitleScroll () {
       if (!this.$refs.titleInner) return;
-      this.$refs.titleInner.style.visibility = 'hidden'
+      // this.$refs.titleInner.style.visibility = 'hidden'
       this.$refs.titleInner.style.animation = 'none'
     },
     scrollTitle () {
@@ -390,8 +411,8 @@ export default {
     fetch () {
       if (!this.isInfoboardEnabled) return this.showBody = false;
       const d = new Date()
-      this.time = "Year 542\u00A0 | " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "" ) + d.getSeconds();
-      const status = this.jumpStatus
+      this.time = "Year 542 | " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "" ) + d.getMinutes();
+      const status = this.jumpStatus;
       if( status === 'broken' || status === 'cooldown' ) {
         this.showBody = true;
         this.jumpTime = 0;
@@ -421,9 +442,9 @@ export default {
     },
 
     fetchData() {
-      this.stopTitleScroll()
       axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
         .then(response => {
+          this.stopTitleScroll();
           this.item = response.data
           setTimeout(() => {
             this.scrollTitle();
@@ -433,7 +454,6 @@ export default {
           console.log(error)
         });
     }
-
   }
 }
 
