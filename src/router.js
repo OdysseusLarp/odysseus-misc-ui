@@ -6,6 +6,7 @@ import TaskListView from './views/TaskListView'
 import TaskDetailsView from './views/TaskDetailsView'
 import TaskMapView from './views/TaskMapView'
 import InfoboardView from './views/InfoboardView'
+import PowerSource from './views/PowerSource'
 
 Vue.use(Router);
 
@@ -40,6 +41,11 @@ export default new Router({
       path: '/infoboard',
       name: 'infoboard',
       component: InfoboardView,
+    },
+    {
+      path: '/powerSource',
+      name: 'powerSource',
+      component: PowerSource,
     },
   ],
 });
