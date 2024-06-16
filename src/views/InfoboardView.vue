@@ -4,7 +4,19 @@
       <img class="background-image":src="getBackgroundImage()" />
       &nbsp;
       <div class="title" ref="title"><div class="title-gradient left"></div><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div><div class="title-gradient right"></div></div>
-      <div class="body" v-html="item.body" v-bind:class="{ 'short-body': item.body.length < 160 }">
+      <div class="body" v-if="item.metadata?.vote_results">
+        <div v-html="item.body" class="vote-results-body"></div>
+        <div class="vote-results">
+          <div class="vote-result" v-for="(result, index) in item.metadata.vote_results" :key="index">
+            <div class="vote-result-name">{{ index + 1 }}. {{ result.name }}</div>
+            <div class="vote-result-bar-container">
+              <div class="vote-result-bar" :style="{ width: result.votesPercentage + '%' }"></div>
+              <div class="vote-result-votes">{{ result.votes }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="body" v-else v-html="item.body" v-bind:class="{ 'short-body': item.body.length < 160 }">
       </div>
       <div class="bottom-text label jump-time">NEXT SAFE JUMP</div>
       <div class="bottom-text value jump-time">{{ safeJumpCountdown ?? "" }}</div>
@@ -49,6 +61,45 @@ $orbitron: 'Orbitron', sans-serif;
   align-items: center;
   justify-content: center;
   cursor: none;
+}
+
+.vote-results {
+  margin-top: 1rem;
+}
+
+.vote-result:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.vote-result-name {
+  margin: 0;
+  padding: 0;
+  font-size: 1.5rem;
+  margin-bottom: -0.4rem;
+  font-weight: bold;
+}
+
+.vote-result-bar {
+  background: var(--vote-result-bar-color);
+  display: inline-block;
+  height: 1.75rem;
+}
+
+.vote-results-body {
+  text-align: center;
+}
+
+.vote-result-bar-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.vote-result-votes {
+  margin-left: 0.5rem;
+  font-size: 1.5rem;
+  display: inline-block;
+  height: 1.75rem;
 }
 
 .infoboard-container {
@@ -283,23 +334,28 @@ export default {
       const formattedNextShiftTime = `${String(nextShiftHour).padStart(2, '0')}:00`;
       return `${formattedTimeLeft} AT ${formattedNextShiftTime}`;
     },
-    setTitleBackgroundColor() {
+    setShiftColors() {
       const shift = this.getShift();
-      let color = "";
+      let titleBackgroundColor = "";
+      let voteResultBarColor = "";
       switch (shift) {
         case Shifts.Solar:
-          color = "#f4a416";
+          titleBackgroundColor = "#f4a416";
+          voteResultBarColor = "#f4f482";
           break;
         case Shifts.Lunar:
-          color = "#272782";
+          titleBackgroundColor = "#272782";
+          voteResultBarColor = "#6adbdb";
           break;
         default:
-          color = "#af0050";
+          titleBackgroundColor = "#af0050";
+          voteResultBarColor = "#ffabe1";
       }
-      document.documentElement.style.setProperty('--title-background-color', color);
+      document.documentElement.style.setProperty('--title-background-color', titleBackgroundColor);
+      document.documentElement.style.setProperty('--vote-result-bar-color', voteResultBarColor);
     },
     getBackgroundImage() {
-      this.setTitleBackgroundColor();
+      this.setShiftColors();
       switch (this.getShift()) {
         case Shifts.Solar:
           return 'img/infoboard/bg-solar.svg';
@@ -421,7 +477,12 @@ export default {
       axios.get('/infoboard/display', {baseURL: this.$store.state.backend.uri})
         .then(response => {
           this.stopTitleScroll();
-          this.item = response.data
+          const data = response.data;
+          if (data.metadata?.vote_results) {
+            // Only show the vote results graph for top 3 results
+            data.metadata.vote_results = data.metadata.vote_results.slice(0, 3);
+          }
+          this.item = data
           setTimeout(() => {
             this.scrollTitle();
             this.resizeFonts();
