@@ -14,7 +14,7 @@ if (process.env.NODE_ENV === "production") {
   });
 
   self.addEventListener("fetch", (event) => {
-    if (event.request.url.match(/\.(png|jpg|jpeg)$/)) {
+    if (event.request.url.match(/\.(png|jpg|jpeg|svg)$/)) {
       event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
