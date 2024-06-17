@@ -8,9 +8,9 @@
         <div v-html="item.body" class="vote-results-body"></div>
         <div class="vote-results">
           <div class="vote-result" v-for="(result, index) in item.metadata.vote_results" :key="index">
-            <div class="vote-result-name">{{ index + 1 }}. {{ result.name }}</div>
+            <div class="vote-result-name">{{ index + 1 }}. {{ result.option }}</div>
             <div class="vote-result-bar-container">
-              <div class="vote-result-bar" :style="{ width: result.votesPercentage + '%' }"></div>
+              <div class="vote-result-bar" :style="{ width: Math.max(result.votesPercentage, 1) + '%' }"></div>
               <div class="vote-result-votes">{{ result.votes }}</div>
             </div>
           </div>
@@ -124,7 +124,6 @@ $orbitron: 'Orbitron', sans-serif;
     font-size: var(--title-font-size);
     line-height: normal;
     text-shadow: 0.05rem 0.05rem 0.4rem rgba(0, 0, 0, 0.2);
-    // border: 2px solid #0f0;
     overflow: hidden;
   }
   .titleInner {
@@ -160,6 +159,9 @@ $orbitron: 'Orbitron', sans-serif;
   }
 
   .body {
+    text-align:justify;
+    word-break:keep-all;
+    padding: 0.5rem;
     position: absolute;
     top: var(--body-top);
     left: var(--body-leftRight);
@@ -168,11 +170,10 @@ $orbitron: 'Orbitron', sans-serif;
     height: var(--body-max-height);
     font-family: $roboto;
     overflow: hidden;
-    // border: 2px solid #0ff;
   }
 
   .short-body {
-    padding-top: 10vh;
+    // padding-top: 10vh;
     font-size: 3rem;
     text-align: center;
   }
@@ -181,7 +182,7 @@ $orbitron: 'Orbitron', sans-serif;
   .body:after {
     content: '';
     position: absolute;
-    height: 8vw;
+    height: 5vw;
     left:0;
     right: 0;
     bottom: 0;
@@ -395,7 +396,7 @@ export default {
       const bodyTop = 33 * heightOffset;
       const bodyLeftRight = 10 * heightOffset;
       const bodyFontSize = 4 * widthOffset;
-      const bodyMaxHeight = 47.5 * heightOffset;
+      const bodyMaxHeight = 46.5 * heightOffset;
 
       const bottomTextFontSize = 2.2 * widthOffset;
       const bottomTextLabelPosition = 13.6 * heightOffset;
@@ -480,7 +481,7 @@ export default {
           const data = response.data;
           if (data.metadata?.vote_results) {
             // Only show the vote results graph for top 3 results
-            data.metadata.vote_results = data.metadata.vote_results.slice(0, 3);
+            data.metadata.vote_results = data.metadata.vote_results.slice(0, Math.min(data.metadata.vote_results.length, 3));
           }
           this.item = data
           setTimeout(() => {
