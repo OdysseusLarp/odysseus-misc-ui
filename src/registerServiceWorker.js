@@ -1,32 +1,39 @@
 /* eslint-disable no-console */
 
-import { register } from 'register-service-worker';
+if (process.env.NODE_ENV === "production") {
+  const CACHE_NAME = "image-cache-v1";
 
-if (process.env.NODE_ENV === 'production') {
-  register(`${process.env.BASE_URL}service-worker.js`, {
-    ready() {
-      console.log(
-        'App is being served from cache by a service worker.\n'
-        + 'For more details, visit https://goo.gl/AFskqB',
+  self.addEventListener("install", (event) => {
+    // Skip waiting to activate the new service worker immediately
+    self.skipWaiting();
+  });
+
+  self.addEventListener("activate", (event) => {
+    // Claim clients immediately, so the service worker starts controlling the page
+    event.waitUntil(self.clients.claim());
+  });
+
+  self.addEventListener("fetch", (event) => {
+    if (event.request.url.match(/\.(png|jpg|jpeg)$/)) {
+      event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+
+          return caches.open(CACHE_NAME).then((cache) => {
+            return fetch(event.request).then((response) => {
+              // Clone the response because it's a stream and can only be consumed once
+              const responseClone = response.clone();
+              cache.put(event.request, responseClone);
+              return response;
+            });
+          });
+        })
       );
-    },
-    registered() {
-      console.log('Service worker has been registered.');
-    },
-    cached() {
-      console.log('Content has been cached for offline use.');
-    },
-    updatefound() {
-      console.log('New content is downloading.');
-    },
-    updated() {
-      console.log('New content is available; please refresh.');
-    },
-    offline() {
-      console.log('No internet connection found. App is running in offline mode.');
-    },
-    error(error) {
-      console.error('Error during service worker registration:', error);
-    },
+    } else {
+      // Do not cache any other requests; just return the network response directly
+      event.respondWith(fetch(event.request));
+    }
   });
 }
