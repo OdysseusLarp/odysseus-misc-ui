@@ -1,12 +1,13 @@
 <template>
   <div class="nfc-container">
+    <button class="prompt-nfc" @click="startNfcWatch" v-if="!isNfcPermissionGranted">Enable NFC reader</button>
     <div class="nfc-reader" :style="getBackgroundStyle()">
     </div>
   </div>
 </template>
 
 <script>
-import { startWatch, cancelWatch } from '../nfc';
+import { startWatch, cancelWatch, isNfcPermissionGranted } from '../nfc';
 import axios from 'axios';
 
 const STATE_RESET_DELAY = 3000;
@@ -36,6 +37,9 @@ export default {
       'img/powersource/success.png',
       'img/powersource/failed.png',
     ]);
+    isNfcPermissionGranted().then((granted) => {
+      this.isNfcPermissionGranted = granted;
+    });
   },
   methods: {
     handleNfcMessage(message) {
@@ -152,5 +156,14 @@ export default {
 .background-image {
   width: 100%;
   height: auto;
+}
+
+.prompt-nfc {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 2rem;
+  font-size: 2rem;
 }
 </style>
