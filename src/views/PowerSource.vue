@@ -1,7 +1,10 @@
 <template>
   <div class="nfc-container">
-    <button class="prompt-nfc" @click="startNfcWatch" v-if="!isNfcPermissionGranted">Enable NFC reader</button>
+    <button class="prompt-nfc" @click="startNfcWatch" v-if="!isNfcPermissionGranted && true === false">Enable NFC reader</button>
     <div class="nfc-reader" :style="getBackgroundStyle()">
+      <div v-if="validationStatus === 'SUCCESS'" class="validation-success-off-game-text">
+        <strong>Off game note:</strong> Turn power on from the off-game switch below this phone
+      </div>
     </div>
   </div>
 </template>
@@ -74,7 +77,6 @@ export default {
         this.validationStatus = allValid ? ValidationStatus.Success : ValidationStatus.Failed;
         if (this.validationStatus === ValidationStatus.Success) {
           // TODO: Add whatever should happen when validation is successful
-          // setTimeout(this.reset, STATE_RESET_DELAY);
         } else {
           setTimeout(this.reset, STATE_RESET_DELAY);
         }
@@ -156,6 +158,20 @@ export default {
 .background-image {
   width: 100%;
   height: auto;
+}
+
+.validation-success-off-game-text {
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border: 1px solid #000;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 80%;
+  padding: 1rem;
+  font-size: 2rem;
+  text-align: center;
 }
 
 .prompt-nfc {
