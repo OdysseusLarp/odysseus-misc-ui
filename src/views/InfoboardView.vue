@@ -111,6 +111,10 @@ $orbitron: 'Orbitron', sans-serif;
   width: 100%;
   height: 100%;
 
+  // * {
+  //   border: 1px solid #0f0;
+  // }
+
   .background-image {
     max-height: 100vh;
     max-width: 100vw;
@@ -127,6 +131,8 @@ $orbitron: 'Orbitron', sans-serif;
     overflow: hidden;
   }
   .titleInner {
+    position: absolute;
+    top: 0.8rem;
     min-width: 100%;
     text-align: center;
     white-space: nowrap;
@@ -149,7 +155,7 @@ $orbitron: 'Orbitron', sans-serif;
     right: 0;
     background: linear-gradient(to right, transparent, var(--title-background-color));
     // Clip off the bottom right corner to match the background svg
-    clip-path: polygon(0 0, 100% 0, 100% 80%, 80% 100%, 0 100%);
+    // clip-path: polygon(0 0, 100% 0, 100% 80%, 80% 100%, 0 100%);
   }
   @keyframes titlescroll {
     0% { left: 0; }
@@ -196,7 +202,7 @@ $orbitron: 'Orbitron', sans-serif;
     line-height: normal;
     font-weight: 400;
     text-shadow: 0.05rem 0.05rem 0.2rem rgba(0, 0, 0, 0.4);
-    width: 25.4vw;
+    width: 28.2vw;
     text-align: center;
   }
 
@@ -389,22 +395,22 @@ export default {
       const shiftRight = 28 * widthOffset;
       const shiftTop = 5 * heightOffset;
 
-      const titleFontSize = 8 * widthOffset;
-      const titleTop = 22 * heightOffset;
-      const titleLeftRight = 11.5 * heightOffset;
+      const titleFontSize = 9 * widthOffset;
+      const titleTop = 20.80 * heightOffset;
+      const titleLeftRight = 7.9 * heightOffset;
 
       const bodyTop = 33 * heightOffset;
-      const bodyLeftRight = 10 * heightOffset;
+      const bodyLeftRight = 6 * heightOffset;
       const bodyFontSize = 4 * widthOffset;
       const bodyMaxHeight = 46.5 * heightOffset;
 
-      const bottomTextFontSize = 2.2 * widthOffset;
-      const bottomTextLabelPosition = 13.6 * heightOffset;
-      const bottomTextValuePosition = 7 * heightOffset;
+      const bottomTextFontSize = 2.5 * widthOffset;
+      const bottomTextLabelPosition = 14 * heightOffset;
+      const bottomTextValuePosition = 6.9 * heightOffset;
 
-      const jumpTimeLeft = 10 * widthOffset;
-      const nextShiftLeft = 37.2 * widthOffset;
-      const shipTimeLeft = 64.4 * widthOffset;
+      const jumpTimeLeft = 5.5 * widthOffset;
+      const nextShiftLeft = 35.8 * widthOffset;
+      const shipTimeLeft = 66.2 * widthOffset;
 
       if (!document.documentElement) return console.warn('document.documentElement is not defined, exiting resize');
 
