@@ -61,6 +61,7 @@ $orbitron: 'Orbitron', sans-serif;
   align-items: center;
   justify-content: center;
   cursor: none;
+  overflow: hidden;
 }
 
 .vote-results {
@@ -132,7 +133,6 @@ $orbitron: 'Orbitron', sans-serif;
   }
   .titleInner {
     position: absolute;
-    top: 0.8rem;
     min-width: 100%;
     text-align: center;
     white-space: nowrap;
@@ -395,8 +395,8 @@ export default {
       const shiftRight = 28 * widthOffset;
       const shiftTop = 5 * heightOffset;
 
-      const titleFontSize = 9 * widthOffset;
-      const titleTop = 20.80 * heightOffset;
+      const titleFontSize = 8 * widthOffset;
+      const titleTop = 20 * heightOffset;
       const titleLeftRight = 7.9 * heightOffset;
 
       const bodyTop = 33 * heightOffset;
