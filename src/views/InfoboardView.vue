@@ -334,8 +334,17 @@ export default {
       nextShift.setHours(nextShiftHour, 0, 0, 0);
 
       const timeDifference = nextShift - new Date();
-      const hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60));
-      const minutesLeft = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60)) + 1;
+      let hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60));
+      let minutesLeft = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+
+      // Add 1 to minutesLeft to account for the remaining partial minute
+      minutesLeft += 1;
+
+      // Correct the edge case where minutesLeft is 60
+      if (minutesLeft === 60) {
+        minutesLeft = 0;
+        hoursLeft += 1;
+      }
 
       const formattedTimeLeft = `T-${String(hoursLeft).padStart(2, '0')}:${String(minutesLeft).padStart(2, '0')}`;
       const formattedNextShiftTime = `${String(nextShiftHour).padStart(2, '0')}:00`;
