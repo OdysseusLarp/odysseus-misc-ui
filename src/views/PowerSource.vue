@@ -108,12 +108,6 @@ export default {
         }, 2300);
       }, 2000);
     }, 2000);
-    setTimeout(() => {
-    this.validationStatus = 'SUCCESS';
-  }, 10000);
-    setTimeout(() => {
-    this.validationStatus = 'FAILED';
-  }, 12000);
   },
   beforeDestroy() {
     cancelWatch();
