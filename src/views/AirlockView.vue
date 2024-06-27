@@ -1,9 +1,9 @@
 <template>
-  <div class="airlock-ui" v-on:click="onClick">
+  <div class="airlock-ui">
     <div class="edge left" :class="mainUIColor"></div>
     <div class="sections">
 
-      <div class="section" v-if="this.box.config.title_bar_text">
+      <div class="section" v-if="this.box.config?.title_bar_text">
         <div class="content" :class="mainUIColor">{{this.box.config.title_bar_text}}</div>
       </div>
 
@@ -15,16 +15,16 @@
         <div class="splitpane">
           <div class="content" :class="doorColor">{{doorState}}</div>
           <div class="content" :class="pressureColor">
-            <airlockPressure :rawPressure="box.pressure" :curve="box.config.pressure_curve" v-on:pressureChange="onPressureChange" />
+            <airlockPressure :rawPressure="box.pressure" :curve="box.config?.pressure_curve" v-on:pressureChange="onPressureChange" />
           </div>
         </div>
       </div>
 
       <div class="section">
-        <div v-if="buttonAction === 'close'" class="action" :class="closeButtonColor">
+        <div v-if="buttonAction === 'close'" class="action" :class="closeButtonColor" v-on:click="onCloseClick">
           {{localize('button_close')}}
         </div>
-        <div v-else class="action" :class="openButtonColor">
+        <div v-else class="action" :class="openButtonColor" v-on:click="onOpenClick">
           {{localize('button_open')}}
         </div>
       </div>
@@ -34,6 +34,20 @@
         <div class="content" :class="mainUIColor">{{statusMessage}}</div>
       </div>
 
+      <div v-if="this.box.config.allow_depressurize" class="section">
+        <div v-if="pressurizeAction === 'depressurize'" class="action splitpane">
+          <div v-on:click="onDepressurizeClick" class="depressurize" :class="depressurizeButtonColor">
+            {{localize('button_depressurize')}}
+          </div>
+          <div v-on:click="onEvacuateClick" class="evacuate" :class="depressurizeButtonColor">
+            {{localize('button_evacuate')}}
+          </div>
+        </div>
+        <div v-else class="action" :class="pressurizeButtonColor" v-on:click="onPressurizeClick">
+          {{localize('button_pressurize')}}
+        </div>
+      </div>
+
       <div class="section">
         <div class="header" :class="mainUIColor">{{countdownTitle}}</div>
         <div class="content" :class="mainUIColor"><timer :target="countdown" /></div>
@@ -41,6 +55,10 @@
 
     </div>
     <div class="edge right" :class="mainUIColor"></div>
+
+    <audio src="../../public/sounds/airlock/beep.mp3" ref="beep"></audio>
+    <audio src="../../public/sounds/airlock/buzz.mp3" ref="buzz"></audio>
+    <audio src="../../public/sounds/airlock/access_denied.mp3" ref="accessDenied"></audio>
   </div>
 </template>
 
@@ -49,10 +67,11 @@
 $bg-green: #0ae4b4;     /* content/action ok */
 $bg-gray: #808285;      /* content neutral / action disabled */
 $bg-red: #ec4705;       /* content error */
-$bg-darkgreen: #506b6a; /* header ok / content ok de-emhasized */
+$bg-darkgreen: #506b6a; /* header ok / content ok de-emphasized */
 $bg-darkgray: #414042;  /* header neutral */
 $bg-darkred: #891300;   /* header with error */
 $bg-blackish: #231f20;  /* gaps and sidebars */
+$bg-yellow: #e4c80a;    /* caution! */
 
 /* FIXME: The pixel measurements below assume an 800x480 screen size. */
 
@@ -123,44 +142,66 @@ $bg-blackish: #231f20;  /* gaps and sidebars */
   flex-basis: 50%;
 }
 
-.content.green, .edge.green, .action.green { background-color: $bg-green; }
+.action.splitpane {
+  background-color: $bg-blackish;
+}
+.action.splitpane > div {
+  background-color: $bg-gray;
+}
+.splitpane > div.depressurize {
+  margin-right: 7px;
+}
+.splitpane > div.evacuate {
+  margin-left: 7px;
+  font-size: 30px;
+  line-height: 30px;
+  padding: 20px 0;
+  white-space: pre-wrap;
+}
+
+.content.green, .edge.green, .action.green, .action > div.green { background-color: $bg-green; }
 .header.green  { background-color: $bg-darkgreen; border-color: $bg-green; }
 
-.content.red, .edge.red, .action.red { background-color: $bg-red; }
+.content.red, .edge.red, .action.red, .action > div.red { background-color: $bg-red; }
 .header.red  { background-color: $bg-darkred; border-color: $bg-red; }
 
-.content.darkgreen, .header.darkgreen, .action.darkgreen { background-color: $bg-darkgreen; }
+.content.darkgreen, .header.darkgreen, .action.darkgreen, .action > div.darkgreen { background-color: $bg-darkgreen; }
+
+.content.yellow, .header.yellow, .action.yellow, .action > div.yellow { background-color: $bg-yellow; }
+
+audio { display: none }
 </style>
 
 <script>
 import AirlockPressure from '@/components/AirlockPressure.vue';
 import Timer from '@/components/Timer.vue';
-import { startDataBlobSync } from '../storeSync';
+import { startDataBlobSync } from '@/storeSync';
 import axios from 'axios';
 
-const DEFAULT_BOX = {}
+const DEFAULT_BOX = { config: { messages: {} } }
 const DEFAULT_MESSAGES = {
   // main status box messages
-  status_open: 'Door open',
-  status_opening: 'Door opening',
-  status_closing: 'Door closing',
-  status_malfunction: 'Door malfunction',
-  status_closed: 'Door closed',
+  status_open: 'Door unlocked',
+  status_opening: 'Unlocking door',
+  status_closing: 'Locking door',
+  status_closed: 'Door locked',
   status_pressurizing: 'Pressurizing',
   status_depressurizing: 'Depressurizing',
   status_vacuum: 'Open to space',
   // door status messages
-  door_open: 'Open',
-  door_opening: 'Opening',
-  door_closing: 'Closing',
-  door_closed: 'Closed',
-  door_malfunction: 'Error',
+  door_open: 'Unlocked',
+  door_opening: 'Unlocking',
+  door_closing: 'Locking',
+  door_closed: 'Locked',
   // button actions
-  button_open: '<< Open door >>',
-  button_close: '>> Close door <<',
+  button_open: '<< Unlock door >>',
+  button_close: '>> Lock door <<',
+  button_pressurize: '<< Pressurize >>',
+  button_depressurize: '>> Depressurize <<',
+  button_evacuate: 'Emergency\nDepressurize',
   // countdown titles
-  countdown_opening: 'Door opening in',
-  countdown_closing: 'Door closing in',
+  countdown_opening: 'Unlocking door in',
+  countdown_closing: 'Locking door in',
   countdown_pressurizing: 'Time to full pressure',
   countdown_depressurizing: 'Time to vacuum',
   countdown_default: 'Countdown',
@@ -185,11 +226,13 @@ export default {
       return new Date(this.box.countdown_to)
     },
     mainUIColor () {
+      if (this.accessDenied) return 'red'
       if (this.box.status === 'open' || this.box.status === 'opening') return 'green'
       // if (this.box.status === 'closed' || this.box.status === 'closing') return 'green'
       return 'red'
     },
     doorColor () {
+      if (this.accessDenied) return 'red'
       if (this.box.status === 'open') return 'green'
       if (this.box.status === 'closing') return 'darkgreen'
       return 'red'
@@ -206,16 +249,37 @@ export default {
       if (this.box.status === 'closing' || this.box.status === 'closed') return 'darkgreen'
       return this.canClose ? 'green' : 'red'
     },
+    pressurizeButtonColor () {
+      if (this.box.status === 'pressurizing' || this.pressure >= 1) return 'darkgreen'
+      return this.canPressurize ? 'green' : 'red'
+    },
+    depressurizeButtonColor () {
+      if (this.box.status === 'depressurizing' || this.pressure <= 0) return 'darkred'
+      return this.canDepressurize ? 'yellow' : 'gray'
+    },
     canOpen () {
-      return this.pressure >= 1 && (this.box.status === 'closed' || this.box.status === 'closing')
+      return this.pressure >= 1 && (this.box.status === 'closed' || this.box.status === 'closing') && !this.accessDenied
     },
     canClose () {
-      return this.box.status === 'open'
+      return this.box.status === 'open' && !this.accessDenied
+    },
+    canPressurize () {
+      return this.pressure < 1 && this.box.status !== 'pressurizing' && !this.accessDenied
+    },
+    canDepressurize () {
+      return this.pressure > 0 && this.box.status === 'closed' && !this.accessDenied
+    },
+    accessDenied () {
+      return this.box.access_denied
     },
     buttonAction () {
       if (this.box.config.auto_close_delay > 0) return 'open'  // closes automatically
       if (this.box.status === 'open') return 'close'
       return 'open'
+    },
+    pressurizeAction () {
+      if (this.box.status === 'vacuum' || this.box.status === 'pressurizing' || this.box.status === 'depressurizing') return 'pressurize'
+      return 'depressurize'
     },
     statusMessage () {
       return this.localize('status_' + this.box.status) || this.box.status
@@ -229,10 +293,30 @@ export default {
     }
   },
   methods: {
-    onClick () {
-      if (this.buttonAction === 'open' && this.canOpen) this.sendCommand('open')  // backend does the rest
-      else if (this.buttonAction === 'close' && this.canClose) this.sendCommand('close')  // backend does the rest
-      // TODO: else play bzzzt sound
+    onOpenClick () {
+      this.attemptAction('open', this.canOpen)
+    },
+    onCloseClick () {
+      this.attemptAction('close', this.canClose)
+    },
+    onPressurizeClick () {
+      this.attemptAction('pressurize', this.canPressurize)
+    },
+    onDepressurizeClick () {
+      this.attemptAction('depressurize', this.canDepressurize)
+    },
+    onEvacuateClick () {
+      this.attemptAction('evacuate', this.canDepressurize)  // same permission logic!
+    },
+    attemptAction(command, allowed) {
+      if (this.accessDenied) {
+        this.playSound('accessDenied')
+      } else if (!allowed) {
+        this.playSound('buzz')
+      } else {
+        this.playSound('beep')
+        this.sendCommand(command)  // backend does the rest
+      }
     },
     localize (message) {
       return this.box.config.messages[message] || DEFAULT_MESSAGES[message]
@@ -247,6 +331,13 @@ export default {
       this.pressure = values.unscaled
       this.scaledPressure = values.scaled
     },
+    playSound (id) {
+      const audio = this.$refs[id]
+      if (!(audio instanceof Audio)) return null
+      audio.pause()
+      audio.currentTime = 0
+      return audio.play()
+    }
   },
   created () {
     startDataBlobSync('box', this.$store.state.boxId)
