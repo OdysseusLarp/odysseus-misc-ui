@@ -6,6 +6,12 @@
         <strong>Off game note:</strong> Turn power on from the off-game switch below this phone
       </div>
     </div>
+    <div class="progress-indicator">
+      <div class="circle" v-if="progress > 0"></div>
+      <div class="circle" v-if="progress > 1"></div>
+      <div class="circle" v-if="progress > 2"></div>
+      <div class="circle" v-if="progress > 3"></div>
+    </div>
   </div>
 </template>
 
@@ -43,6 +49,11 @@ export default {
     isNfcPermissionGranted().then((granted) => {
       this.isNfcPermissionGranted = granted;
     });
+  },
+  computed: {
+    progress() {
+      return this.readCodes.length;
+    }
   },
   methods: {
     handleNfcMessage(message) {
@@ -182,4 +193,26 @@ export default {
   padding: 2rem;
   font-size: 2rem;
 }
+
+.progress-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-content: space-around;
+}
+
+.circle {
+  width: 6rem;
+  height: 6rem;
+  background-color: white;
+  border-radius: 50%;
+  border: 0.1rem solid #5c5d5e;
+}
+
 </style>
