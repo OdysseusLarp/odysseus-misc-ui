@@ -1,5 +1,9 @@
 <template>
   <div class="nfc-container">
+    <button class="prompt-nfc" @click="startNfcWatch" v-if="!isNfcPermissionGranted()">Enable NFC reader</button>
+    <div v-if="validationStatus === 'SUCCESS'" class="validation-success-off-game-text">
+        <strong>Off game note:</strong> Turn power on from the off-game switch below this phone
+      </div>
     <div class="nfc-reader">
       <img class="circle1" :class="{'rotate-once': rotationStage === 1, 'rotate-twice': rotationStage === 2, 'dimmed': validationStatus === 'FAILED'|| validationStatus === 'SUCCESS'}" src="img/powersource/Circle_Piece_01.png" alt="NFC Reader Image 1">
       <img class="circle2" :class="{'rotate-once': rotationStage === 1, 'rotate-twice': rotationStage === 2, 'dimmed': validationStatus === 'FAILED'|| validationStatus === 'SUCCESS'}" src="img/powersource/Circle_Piece_02.png" alt="NFC Reader Image 2">
@@ -32,7 +36,6 @@
 import { startWatch, cancelWatch, isNfcPermissionGranted } from '../nfc';
 import axios from 'axios';
 
-const STATE_RESET_DELAY = 3000;
 const CODES_REQUIRED = 4;
 
 const ValidationStatus = {
@@ -45,15 +48,45 @@ export default {
   name: "NfcReader",
   data() {
     return {
-      isNfcPermissionGranted: false,
       readCodes: [],
       validationStatus: ValidationStatus.Initial,
+      isValidationInProgress: false,
       nfcWatchStarted: false,
       buttonWhiteFaded: false,
       rotationStage: 0,
     }
   },
+  created() {
+    this.preloadImages([
+    'img/powersource/Circle_Piece_01.png',
+    'img/powersource/Circle_Piece_02.png',
+    'img/powersource/Circle_Piece_03.png',
+    'img/powersource/side1.png',
+    'img/powersource/side2.png',
+    'img/powersource/button_base_white.png',
+    'img/powersource/button_base_white.png',
+    'img/powersource/Card_Cell_Slide.png',
+    'img/powersource/Loading.png',
+    'img/powersource/Rectangle1.png',
+    'img/powersource/Rectangle2.png',
+    'img/powersource/leo.png',
+    'img/powersource/squares.png',
+    'img/powersource/torc.png',
+    'img/powersource/zigzag.png',
+    'img/powersource/Control_button_01.png',
+    'img/powersource/Control_button_02.png',
+    'img/powersource/Control_button_03.png',
+    'img/powersource/indicator_right.png',
+    'img/powersource/indicator_up.png',
+    'img/powersource/Error.png',
+    'img/powersource/button_failed.png',
+    'img/powersource/button_success.png'
+    ]);
+  },
   methods: {
+    isNfcPermissionGranted() {
+      return isNfcPermissionGranted();
+    },
     handleNfcMessage(message) {
       if (this.isValidationInProgress) {
         console.log('Validation already in progress, ignoring');
@@ -85,7 +118,7 @@ export default {
         const allValid = results.every(response => response.data.medical_elder_gene === true);
         this.validationStatus = allValid ? ValidationStatus.Success : ValidationStatus.Failed;
         if (this.validationStatus === ValidationStatus.Success) {
-          // TODO: Add whatever should happen when validation is successful
+          // No operation here - just show the success message
         } else {
           this.startLoaderRotation();
           setTimeout(() => {
@@ -96,7 +129,7 @@ export default {
       } catch (error) {
         console.error('Error validating codes:', error);
         this.validationStatus = ValidationStatus.Failed;
-        setTimeout(this.reset, STATE_RESET_DELAY);
+        setTimeout(this.reset, 3000);
       } finally {
         this.isValidationInProgress = false;
       }
@@ -108,7 +141,7 @@ export default {
           this.validationStatus = ValidationStatus.Initial;
           this.nfcWatchStarted = false;
           this.startNfcWatch();
-        }, STATE_RESET_DELAY);
+        }, 3000);
       } else {
         this.validationStatus = ValidationStatus.Initial;
         this.nfcWatchStarted = false;
@@ -119,31 +152,43 @@ export default {
       this.nfcWatchStarted = true;
       await startWatch(this.handleNfcMessage);
     },
+    preloadImages(imageArray) {
+      imageArray.forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      });
+    }
   },
   mounted() {
     this.startNfcWatch();
+
+    // Initial animation
     setTimeout(() => {
       this.buttonWhiteFaded = true;
-      setTimeout(() => {
-        this.rotationStage = 1;
-        setTimeout(() => {
-          this.rotationStage = 2;
-        }, 2300);
-      }, 2000);
     }, 2000);
     setTimeout(() => {
-    this.validationStatus = 'SUCCESS';
-  }, 10000);
+      this.rotationStage = 1;
+    }, 4000);
     setTimeout(() => {
-    this.validationStatus = 'FAILED';
-  }, 12000);
+      this.rotationStage = 2;
+    }, 8300);
+
+    // Debugging for setting the Success status
+    // setTimeout(() => {
+    //   this.validationStatus = ValidationStatus.Success;
+    // }, 10000);
+
+  // Debugging for setting the Failed status
+    // setTimeout(() => {
+    //   this.validationStatus = ValidationStatus.Failed;
+    // }, 12000);
   },
   beforeDestroy() {
     cancelWatch();
   },
   computed: {
     buttonWhite2Class() {
-      if (this.validationStatus === 'FAILED' || this.validationStatus === 'SUCCESS') {
+      if (this.validationStatus === ValidationStatus.Success || this.validationStatus === ValidationStatus.Failed) {
         return 'fade-out';
       } else if (this.rotationStage === 2) {
         return 'fade-in';
@@ -164,6 +209,28 @@ export default {
 .nfc-reader {
 }
 
+.validation-success-off-game-text {
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border: 1px solid #000;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 80%;
+  padding: 1rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.prompt-nfc {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 2rem;
+  font-size: 2rem;
+}
 
 .button_white {
   position: absolute;
