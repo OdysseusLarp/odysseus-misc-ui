@@ -7,6 +7,7 @@ import TaskDetailsView from './views/TaskDetailsView'
 import TaskMapView from './views/TaskMapView'
 import InfoboardView from './views/InfoboardView'
 import PowerSource from './views/PowerSource'
+import Starfield from './views/Starfield'
 
 Vue.use(Router);
 
@@ -46,6 +47,11 @@ export default new Router({
       path: '/powerSource',
       name: 'powerSource',
       component: PowerSource,
+    },
+    {
+      path: '/starfield',
+      name: 'starfield',
+      component: Starfield,
     },
   ],
 });
