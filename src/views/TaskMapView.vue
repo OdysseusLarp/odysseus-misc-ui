@@ -94,6 +94,9 @@ const ANIMATION_MIN_Y = 900
 const ANIMATION_MAX_Y = 1600 - MAP_SIZE
 import Box from '../components/Box'
 
+function clamp(n, min, max) {
+  return Math.min(Math.max(n, min), max)
+}
 function twoDigit(n) {
   return n < 10 ? "0" + n : "" + n
 }
@@ -158,8 +161,8 @@ export default {
       this.entry = entry
       this.item = JSON.parse(entry)
       if (this.item.map && this.item.mapX && this.item.mapY) {
-        const finalX = this.item.mapPosX || this.item.mapX - randomIntFromString(`X${this.item.mapX},${this.item.mapY}X`, MAP_RANDOM_POSITION_MIN, MAP_RANDOM_POSITION_MAX)
-        const finalY = this.item.mapPosY || this.item.mapY - randomIntFromString(`Y${this.item.mapX},${this.item.mapY}Y`, MAP_RANDOM_POSITION_MIN, MAP_RANDOM_POSITION_MAX)
+        const finalX = clamp(this.item.mapPosX ?? this.item.mapX - randomIntFromString(`X${this.item.mapX},${this.item.mapY}X`, MAP_RANDOM_POSITION_MIN, MAP_RANDOM_POSITION_MAX), 0, MAP_IMAGE_WIDTH - MAP_SIZE)
+        const finalY = clamp(this.item.mapPosY ?? this.item.mapY - randomIntFromString(`Y${this.item.mapX},${this.item.mapY}Y`, MAP_RANDOM_POSITION_MIN, MAP_RANDOM_POSITION_MAX), 0, MAP_IMAGE_HEIGHT - MAP_SIZE)
         this.indicatorX = (this.item.mapX - finalX) * 100 / MAP_SIZE // percent
         this.indicatorY = (this.item.mapY - finalY) * 100 / MAP_SIZE // percent
         this.finalImage = 'map/' + this.item.map + '.png'
