@@ -1,5 +1,9 @@
 <template>
-  <div class="airlock-ui">
+  <div v-if="jumping">
+    <!-- Show TV-static screen during 'jumping' state -->
+    <odysseus-static></odysseus-static>
+  </div>
+  <div v-else class="airlock-ui">
     <div class="edge left" :class="mainUIColor"></div>
     <div class="sections">
 
@@ -34,7 +38,7 @@
         <div class="content" :class="mainUIColor">{{statusMessage}}</div>
       </div>
 
-      <div v-if="this.box.config.allow_depressurize" class="section">
+      <div v-if="box.config.allow_depressurize" class="section">
         <div v-if="pressurizeAction === 'depressurize'" class="action splitpane">
           <div v-on:click="onDepressurizeClick" class="depressurize" :class="depressurizeButtonColor">
             {{localize('button_depressurize')}}
@@ -179,6 +183,8 @@ import { startDataBlobSync } from '@/storeSync';
 import axios from 'axios';
 
 const DEFAULT_BOX = { config: { messages: {} } }
+const DEFAULT_JUMPSTATE = { status: 'unknown' }
+
 const DEFAULT_MESSAGES = {
   // main status box messages
   status_open: 'Door unlocked',
@@ -188,6 +194,8 @@ const DEFAULT_MESSAGES = {
   status_pressurizing: 'Pressurizing',
   status_depressurizing: 'Depressurizing',
   status_vacuum: 'Open to space',
+  // special status box message during jump countdown and scripted scene
+  access_denied: '!! Access Denied !!',
   // door status messages
   door_open: 'Unlocked',
   door_opening: 'Unlocking',
@@ -221,6 +229,9 @@ export default {
   computed: {
     box () {
       return this.$store.state.dataBlobs.find(e => e.type === 'box' && e.id === this.$store.state.boxId) || DEFAULT_BOX
+    },
+    jumpstate () {
+      return this.$store.state.dataBlobs.find(e => e.type === 'ship' && e.id === 'jumpstate') || DEFAULT_JUMPSTATE
     },
     countdown () {
       return new Date(this.box.countdown_to)
@@ -270,7 +281,13 @@ export default {
       return this.pressure > 0 && this.box.status === 'closed' && !this.accessDenied
     },
     accessDenied () {
-      return this.box.access_denied
+      return this.box.access_denied || this.jumpInitiated || this.jumping
+    },
+    jumpInitiated () {
+      return this.jumpstate.status === 'jump_initiated'
+    },
+    jumping () {
+      return this.jumpstate.status === 'jumping'
     },
     buttonAction () {
       if (this.box.config.auto_close_delay > 0) return 'open'  // closes automatically
@@ -282,6 +299,7 @@ export default {
       return 'depressurize'
     },
     statusMessage () {
+      if (this.accessDenied) return this.localize('access_denied')
       return this.localize('status_' + this.box.status) || this.box.status
     },
     doorState () {
@@ -341,6 +359,7 @@ export default {
   },
   created () {
     startDataBlobSync('box', this.$store.state.boxId)
+    startDataBlobSync('ship', 'jumpstate')
   },
 }
 </script>
