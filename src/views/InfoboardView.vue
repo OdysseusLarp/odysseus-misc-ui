@@ -3,7 +3,13 @@
     <div v-if="showBody" class="infoboard-container" ref="infoboardContainer">
       <img class="background-image":src="getBackgroundImage()" />
       &nbsp;
-      <div class="title" ref="title"><div class="title-gradient left"></div><div class="titleInner" ref="titleInner">{{ item.title.toUpperCase() }}</div><div class="title-gradient right"></div></div>
+      <div class="title" ref="title">
+        <div class="title-gradient left"></div>
+        <div class="titleInner" ref="titleInner">
+          <span class="title-padding">&nbsp;</span>{{ item.title.toUpperCase() }}<span class="title-padding">&nbsp;</span>
+        </div>
+        <div class="title-gradient right"></div>
+      </div>
       <div class="body" v-if="item.metadata?.vote_results">
         <div v-html="item.body" class="vote-results-body"></div>
         <div class="vote-results">
@@ -132,12 +138,15 @@ $orbitron: 'Orbitron', sans-serif;
     overflow: hidden;
   }
   .titleInner {
-    position: absolute;
     min-width: 100%;
     text-align: center;
     white-space: nowrap;
     position: relative;
     animation: titlescroll 10s linear;
+  }
+  .title-padding {
+    display: inline-block;
+    width: 3rem;
   }
   .title-gradient {
     width: 3rem;
