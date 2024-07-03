@@ -1,72 +1,80 @@
 <template>
-  <div class="starfield" ref="wrapper">
-    <iframe id="player"
-            src="https://www.youtube.com/embed/M7hvI-CYX3I?enablejsapi=1&disablekbd=0&autoplay=1&loop=1&controls=0&rel=0"
-            frameborder="0" allowfullscreen></iframe>
+  <div class="starfield">
+    <video :src="videoSrc" autoplay loop muted @play="requestWakeLock" @pause="releaseWakeLock"
+      @ended="releaseWakeLock"></video>
   </div>
 </template>
 
 <style scoped lang="scss">
-.starfield, .starfield > iframe {
-  width: 100%;
-  height: 100%;
+.starfield {
+  width: 100vw;
+  height: 100vh;
   background: black;
   overflow: hidden;
+  position: relative;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 </style>
 
 <script>
-import {startDataBlobSync} from "@/storeSync";
+import { startDataBlobSync } from "@/storeSync";
 
-const VIDEO_IDS = {
-  jumping: 'JijuoM8Rvpo',
-  default: 'M7hvI-CYX3I'
+const VIDEOS = {
+  jumping: 'jump.mp4',
+  default: 'base.mp4'
 }
 
 export default {
   created() {
     startDataBlobSync('ship', 'jumpstate')
   },
-  mounted() {
-    const scriptTag = document.createElement('script');
-    scriptTag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(scriptTag, firstScriptTag);
-
-    window.onYouTubeIframeAPIReady = () => {
-      this.player = new YT.Player('player', {
-        events: {
-          onReady: () => this.refreshPlayer()
-        }
-      });
-    }
-
-    // FOR JUMP DEBUGGING
-    setInterval(() => this.counter++, 5000)
-  },
   data: () => ({
-    player: null,
-    counter: 0,
+    wakeLock: null,
   }),
   computed: {
-    jumpStatus () {
+    jumpStatus() {
       return this.$store.state.dataBlobs.find(t => t.type === 'ship' && t.id === 'jumpstate')?.status
     },
-    videoId () {
-      const status = this.jumpStatus || 'unknown'
-      //const status = this.counter % 2 ? 'jumping' : 'broken'
-      return VIDEO_IDS[status] || VIDEO_IDS.default
+    videoSrc() {
+      const video = VIDEOS[this.jumpStatus] || VIDEOS.default;
+      // Doesn't work locally for now, sorry
+      const baseUrl = "/videos/";
+      return baseUrl + video;
     }
-  },
-  watch: {
-    videoId () {
-      this.refreshPlayer()
-    },
   },
   methods: {
-    refreshPlayer() {
-      if (this.player) this.player.loadVideoById({ videoId: this.videoId })
+    async requestWakeLock() {
+      if ('wakeLock' in navigator && !this.wakeLock) {
+        try {
+          this.wakeLock = await navigator.wakeLock.request('screen');
+          this.wakeLock.addEventListener('release', () => {
+            console.log('Screen Wake Lock released');
+          });
+          console.log('Screen Wake Lock acquired');
+        } catch (err) {
+          console.error(`${err.name}, ${err.message}`);
+        }
+      }
+    },
+    releaseWakeLock() {
+      if (this.wakeLock) {
+        this.wakeLock.release().then(() => {
+          this.wakeLock = null;
+          console.log('Screen Wake Lock released');
+        });
+      }
     }
+  },
+  beforeDestroy() {
+    this.releaseWakeLock();
   }
 }
 </script>
