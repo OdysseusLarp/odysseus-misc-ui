@@ -69,13 +69,14 @@
 <style lang="scss" scoped>
 /* color palette */
 $bg-green: #0ae4b4;     /* content/action ok */
-$bg-gray: #808285;      /* content neutral / action disabled */
-$bg-red: #ec4705;       /* content error */
-$bg-darkgreen: #506b6a; /* header ok / content ok de-emphasized */
-$bg-darkgray: #414042;  /* header neutral */
-$bg-darkred: #891300;   /* header with error */
-$bg-blackish: #231f20;  /* gaps and sidebars */
 $bg-yellow: #e4c80a;    /* caution! */
+$bg-red: #ec4705;       /* content error */
+$bg-gray: #808285;      /* content neutral / action disabled */
+$bg-darkgreen: #506b6a; /* header ok / content ok de-emphasized */
+$bg-darkyellow: #726609;/* caution! */
+$bg-darkred: #891300;   /* header with error */
+$bg-darkgray: #414042;  /* header neutral */
+$bg-blackish: #231f20;  /* gaps and sidebars */
 
 /* FIXME: The pixel measurements below assume an 800x480 screen size. */
 
@@ -166,12 +167,13 @@ $bg-yellow: #e4c80a;    /* caution! */
 .content.green, .edge.green, .action.green, .action > div.green { background-color: $bg-green; }
 .header.green  { background-color: $bg-darkgreen; border-color: $bg-green; }
 
+.content.yellow, .edge.yellow, .action.yellow, .action > div.yellow { background-color: $bg-yellow; }
+.header.yellow { background-color: $bg-darkyellow; border-color: $bg-yellow; }
+
 .content.red, .edge.red, .action.red, .action > div.red { background-color: $bg-red; }
 .header.red  { background-color: $bg-darkred; border-color: $bg-red; }
 
 .content.darkgreen, .header.darkgreen, .action.darkgreen, .action > div.darkgreen { background-color: $bg-darkgreen; }
-
-.content.yellow, .header.yellow, .action.yellow, .action > div.yellow { background-color: $bg-yellow; }
 
 audio { display: none }
 </style>
@@ -249,7 +251,8 @@ export default {
       return 'red'
     },
     pressureColor () {
-      if (this.scaledPressure >= (this.box.safe_pressure_threshold || 0.99)) return 'green'
+      if (this.scaledPressure >= (this.box.safe_pressure_threshold || 0.75)) return 'green'
+      if (this.scaledPressure >= (this.box.deadly_pressure_threshold || 0.25)) return 'yellow'
       return 'red'
     },
     openButtonColor () {
