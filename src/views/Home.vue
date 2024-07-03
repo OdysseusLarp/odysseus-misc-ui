@@ -3,7 +3,7 @@
     <h2 class="mt-4">Backend settings:</h2>
     <b-button size="sm" class="my-2 my-sm-0" v-b-modal.backendChooserModal>{{backendUri}}</b-button>
     <backend-chooser></backend-chooser>
-    <b-form-input v-model="boxId" type="text" placeholder="Box ID"></b-form-input>
+    <b-form-input class="box-id" v-model="boxId" type="text" placeholder="Box ID"></b-form-input>
 
     <h2 class="mt-4">Choose app:</h2>
     <b-button variant="outline-primary" to="/tasks" class="mt-4">Engineer tasks list</b-button>
@@ -41,3 +41,12 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+a.btn:not(:last-child) {
+  margin-right: 10px;
+}
+.box-id {
+  margin-top: 10px;
+}
+</style>
