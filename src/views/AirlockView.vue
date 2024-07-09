@@ -272,13 +272,15 @@ export default {
       return this.canDepressurize ? 'yellow' : 'gray'
     },
     canOpen () {
-      return this.pressure >= 1 && (this.box.status === 'closed' || this.box.status === 'closing') && !this.accessDenied
+      return this.pressure >= 1 && (this.box.status === 'closed' || this.box.status === 'closing')
+        && !this.accessDenied && this.box.fighters !== 'active'
     },
     canClose () {
       return this.box.status === 'open' && !this.accessDenied
     },
     canPressurize () {
-      return this.pressure < 1 && this.box.status !== 'pressurizing' && !this.accessDenied
+      return this.pressure < 1 && this.box.status !== 'pressurizing'
+        && !this.accessDenied && this.box.fighters !== 'active'
     },
     canDepressurize () {
       return this.pressure > 0 && this.box.status === 'closed' && !this.accessDenied
