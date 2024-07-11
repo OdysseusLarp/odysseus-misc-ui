@@ -1,19 +1,19 @@
 <template>
   <div class="ee-status-container">
-            <!-- For each key/value in gameState.landingPads print out stuff-->
-             <div class="landing-pad-container">
               <div v-for="([key, value]) in landingPadStatus" :key="key" class="landing-pad-status" :class="getLandingPadClass(value)">
               <strong>{{ getLandingPadName(key) }}</strong>
               <span>{{ getLandingPadState(value) }}</span>
             </div>
              </div>
-            <hr />
-          </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 /* color palette */
 $bg-background: #C8C4BB;  /* background */
+
+strong {
+  margin-bottom: 1rem;
+}
 
 .ee-status-container {
   width: 100%;
@@ -28,17 +28,15 @@ $bg-background: #C8C4BB;  /* background */
   background-color: $bg-background;
   user-select: none;
   cursor: pointer;
+  padding: 2rem;
 }
 .ee-status-container {
   position: relative;
 }
-.landing-pad-container {
-  display: flex;
-  flex-direction: row;
-}
 .landing-pad-status {
-  border: 1px solid #f00;
+  border: 2px solid #f00;
   padding: 0.5rem;
+  margin: 2rem;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -51,15 +49,18 @@ $bg-background: #C8C4BB;  /* background */
 }
 
 .landing-pad-status-destroyed {
-  border: 1px solid #dc3545;
+  border: 2px solid #dc3545;
+  background: rgba(220, 53, 69, 0.1);
 }
 
 .landing-pad-status-docked {
-  border: 1px solid #28a745;
+  border: 2px solid #28a745;
+  background: rgba(40, 167, 69, 0.1);
 }
 
 .landing-pad-status-launched {
-  border: 1px solid #ffc107;
+  border: 2px solid #ffc107;
+  background: rgba(255, 193, 7, 0.1);
 }
 h3 {
   padding-top: 0.5rem;
