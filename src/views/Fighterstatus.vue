@@ -28,21 +28,30 @@ strong {
   background-color: $bg-background;
   user-select: none;
   cursor: pointer;
-  padding: 2rem;
+  padding: 0.25rem;
+  letter-spacing: .05rem;
 }
 .ee-status-container {
   position: relative;
 }
 .landing-pad-status {
+  align-self: center;
+  height: 50vh;
   border: 2px solid #f00;
-  padding: 0.5rem;
-  margin: 2rem;
+  padding: 0.25rem;
+  padding-top: 1rem;
+  margin: 0.5rem;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   border-radius: 0.2rem;
+  display: flex;
+  flex-direction: column;;
+}
+.landing-pad-status > * {
+  flex: 1;
 }
 .landing-pad-status:not(:last-child) {
   margin-right: 0.5rem;
