@@ -6,7 +6,7 @@
       <div v-else-if="item.calibrationCount === 1" class="calibration">Estimated calibration time: {{formatDuration(item.calibrationTime)}}</div>
       <div v-else class="calibration">Estimated calibration time: None</div>
       <div v-if="item.hasOwnProperty('eeHealth')  > 0" class="calibration">Fixes {{formatEEType(item.eeType)}} by {{Math.round((item.eeHealth * 100 + Number.EPSILON) * 100) / 100}} %</div>
-      <div v-if="item.hasOwnProperty('lifesupportHealth') > 0" class="calibration">Fixes life support by {{item.lifesupportHealth * 100}} %</div>
+      <div v-if="item.hasOwnProperty('lifesupportHealth') > 0" class="calibration">Fixes life support by {{Math.round((item.lifesupportHealth * 100 + Number.EPSILON) * 100) / 100}} %</div>
     </div>
   </Box>
 </template>
