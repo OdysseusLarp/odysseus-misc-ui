@@ -13,7 +13,7 @@
 
 <style lang="scss">
 /* color palette */
-$bg-whitish: #F9F1DC;  /* gaps and sidebars */
+$bg-background: #C8C4BB;  /* background */
 
 .ee-status-container {
   width: 100%;
@@ -25,7 +25,7 @@ $bg-whitish: #F9F1DC;  /* gaps and sidebars */
   display: flex;
   flex-direction: row;
   color: black;
-  background-color: $bg-whitish;
+  background-color: $bg-background;
   user-select: none;
   cursor: pointer;
 }
@@ -125,7 +125,7 @@ export default {
     getLandingPadState(value) {
       switch (value) {
         case 0: {
-          return "Destroyed";
+          return "Inoperable";
         }
         case 1: {
           return "Docked";
