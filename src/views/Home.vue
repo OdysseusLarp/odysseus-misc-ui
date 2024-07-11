@@ -13,6 +13,7 @@
     <b-button variant="outline-primary" to="/airlock" class="mt-4">Airlock control</b-button>
     <b-button variant="outline-primary" to="/powerSource" class="mt-4">Power source</b-button>
     <b-button variant="outline-primary" to="/starfield" class="mt-4">Starfield</b-button>
+    <b-button variant="outline-primary" to="/fighterstatus" class="mt-4">Fighter status</b-button>
   </b-container>
 </template>
 

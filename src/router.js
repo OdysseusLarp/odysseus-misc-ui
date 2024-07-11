@@ -8,6 +8,7 @@ import TaskMapView from './views/TaskMapView'
 import InfoboardView from './views/InfoboardView'
 import PowerSource from './views/PowerSource'
 import Starfield from './views/Starfield'
+import Fighterstatus from './views/Fighterstatus'
 
 Vue.use(Router);
 
@@ -52,6 +53,11 @@ export default new Router({
       path: '/starfield',
       name: 'starfield',
       component: Starfield,
+    },
+    {
+      path: '/fighterstatus',
+      name: 'fighterstatus',
+      component: Fighterstatus,
     },
   ],
 });
