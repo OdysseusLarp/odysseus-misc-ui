@@ -313,17 +313,20 @@ export default {
   methods: {
     getShift() {
       const hour = new Date().getHours();
+      if (hour >= 0 && hour < 4) return Shifts.Lunar;
       if (hour >= 4 && hour < 8) return Shifts.Solar;
       if (hour >= 8 && hour < 12) return Shifts.Twilight;
       if (hour >= 12 && hour < 16) return Shifts.Lunar;
       if (hour >= 16 && hour < 20) return Shifts.Solar;
+      if (hour >= 20) return Shifts.Twilight;
+      // Just default to something, although all cases should be covered
       return Shifts.Twilight;
     },
     getNextShift() {
       const currentShift = this.getShift();
-      if (currentShift === Shifts.Solar) return Shifts.Lunar;
-      if (currentShift === Shifts.Lunar) return Shifts.Twilight;
-      return Shifts.Solar;
+      if (currentShift === Shifts.Lunar) return Shifts.Solar;
+      if (currentShift === Shifts.Solar) return Shifts.Twilight;
+      return Shifts.Lunar;
     },
     calculateTimeUntilNextShift() {
       const now = new Date();
